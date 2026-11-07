@@ -41,6 +41,22 @@ Read **[docs/PHASES.md](docs/PHASES.md)** for the eight-phase roadmap, detailed 
 - Uploaded and user-entered data must be validated and safely escaped before display.
 - The admin dashboard must remain read-only and unavailable to normal users.
 
+
+## Phase 1 – Cyberpunk web design preview
+
+A dark, neon cyberpunk design has been added to the public homepage and guest screens. The current PHP pages are **visual previews only**: registration, log-in, billing, OTPs, and account monitoring have **not** been implemented yet. The registration form is intentionally not started until the proposal is approved.
+
+To preview on Windows after cloning the repository:
+
+```powershell
+cd Project404
+C:\xampp\php\php.exe -S 127.0.0.1:8000 -t public
+```
+
+Then open http://127.0.0.1:8000/.
+
+See **[Phase 1 design notes](docs/PHASE1_DESIGN.md)** for the color palette, pages, accessibility and XAMPP/DocumentRoot guidance.
+
 ## Next step
 
 Complete **Phase 0**: fill in Appendix A using the proposed BillGuard field set, compute the seed parameters privately, and obtain instructor approval. Then start PHP/MySQL application development.
