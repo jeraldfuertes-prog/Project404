@@ -22,6 +22,9 @@ This roadmap follows the IT 107 **Security1 Student Handout**. Do not implement 
 
 ## Phase 1 — Repository and development environment (Week 1)
 
+**Repository preparation:** database schema, PDO helper, PHP preflight, PHPMailer dependency and SMTP test script are committed. Follow [Phase 1 local setup](PHASE1_SETUP.md); keep the tests unchecked until the Windows installation and test inbox are actually verified.
+
+
 **Goal:** Prepare safe, clear infrastructure; no application functionality until approval.
 
 - [ ] Install and test XAMPP (Apache/PHP/MySQL), Composer, and VS Code.
