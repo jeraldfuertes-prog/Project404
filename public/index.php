@@ -31,13 +31,13 @@ bg_page_start('Home', 'home');
             <p class="hud__label">Sample monthly utilities</p>
             <p class="hud__amount">₱4,875.00</p>
             <div class="hud__visual" aria-hidden="true">
-                <div class="hud__bar" style="height: 43%"></div>
-                <div class="hud__bar" style="height: 66%"></div>
-                <div class="hud__bar" style="height: 52%"></div>
-                <div class="hud__bar" style="height: 89%"></div>
-                <div class="hud__bar" style="height: 72%"></div>
-                <div class="hud__bar" style="height: 100%"></div>
-                <div class="hud__bar" style="height: 61%"></div>
+                <div class="hud__bar hud__bar--1"></div>
+                <div class="hud__bar hud__bar--2"></div>
+                <div class="hud__bar hud__bar--3"></div>
+                <div class="hud__bar hud__bar--4"></div>
+                <div class="hud__bar hud__bar--5"></div>
+                <div class="hud__bar hud__bar--6"></div>
+                <div class="hud__bar hud__bar--7"></div>
             </div>
             <div class="hud__row"><span>Electricity</span><strong>₱2,320.00</strong></div>
             <div class="hud__row"><span>Water</span><strong>₱655.00</strong></div>
