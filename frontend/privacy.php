@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-require_once dirname(__DIR__) . '/php/layout.php';
+require_once dirname(__DIR__) . '/backend/php/layout.php';
 bg_page_start('Privacy Notice Preview', 'privacy');
 ?>
 <section class="page-intro">

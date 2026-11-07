@@ -113,7 +113,7 @@ This roadmap follows the IT 107 **Security1 Student Handout**. Do not implement 
 - [ ] Read-only dashboard: summary cards, failed-login hourly bar chart, top 5 IPs, script flags, latest 50 events with date/event/username/IP filters.
 - [ ] Auto-refresh dashboard JSON every 60 seconds; protect from HTML/JS injection.
 - [ ] Keep activity log append-only: never provide log edit/delete operations.
-- [ ] Build `scripts/monitor.php`, runnable only by CLI and inaccessible from the browser.
+- [ ] Build `backend/scripts/monitor.php`, runnable only by CLI and inaccessible from the browser.
 - [ ] Scan latest 24 hours, flag:
   - IP above seeded 10-minute failure threshold.
   - One username attacked from >=3 IPs.
@@ -147,42 +147,41 @@ This roadmap follows the IT 107 **Security1 Student Handout**. Do not implement 
 
 ```text
 Project404/
-├── public/                    # Apache DocumentRoot: only browser-reachable files
+├── frontend/                  # Apache/PHP DocumentRoot: only browser-accessible assets
 │   ├── index.php
-│   ├── register.php
 │   ├── login.php
-│   ├── verify-otp.php
-│   ├── forgot-password.php
-│   ├── change-password.php
+│   ├── register.php
 │   ├── privacy.php
-│   ├── dashboard.php
-│   ├── bills.php
-│   ├── admin-monitor.php
+│   ├── verify-otp.php         # Future phase
+│   ├── forgot-password.php    # Future phase
+│   ├── change-password.php    # Future phase
+│   ├── dashboard.php          # Future phase
+│   ├── bills.php              # Future phase
+│   ├── admin-monitor.php      # Future phase
 │   ├── css/
-│   ├── js/                   # Browser-visible: never store secrets here
+│   │   └── cyberpunk.css
+│   ├── js/                   # Browser-visible; no secrets
 │   └── images/
-├── php/                      # Internal server-side PHP: DB, validation, auth, email, sessions, monitoring
-├── scripts/
-│   └── monitor.php           # CLI only, outside public/
-├── database/
-│   └── schema.sql
+├── backend/                   # NOT served by Apache/PHP
+│   ├── php/
+│   │   └── layout.php        # Internal PHP modules go here
+│   ├── database/
+│   │   └── schema.sql        # Future phase
+│   ├── scripts/
+│   │   └── monitor.php       # Future CLI only, not reachable via browser
+│   ├── config.sample.php     # Future fake secrets only
+│   ├── config.php            # Future real secrets; ignored, never commit
+│   ├── logs/                 # Server error logs; ignored
+│   └── vendor/               # Composer dependencies; ignored
 ├── docs/
 │   ├── PHASES.md
-│   ├── proposal.md           # After proposal preparation
-│   ├── threat-model.md
-│   ├── design-decisions.md
-│   ├── privacy-note.md
-│   ├── error-message-mapping.md
-│   └── development-journal.md
-├── config.sample.php         # Fake values only
-├── config.php                # Real secrets; ignored; never commit
-├── logs/                     # Server errors; ignored and private
-├── vendor/                   # Composer packages; ignored
+│   ├── PHASE1_DESIGN.md
+│   └── ...                   # Proposal, threat model, journal in future phases
 ├── .gitignore
 └── README.md
 ```
 
-**Note:** These public PHP pages are intentional application endpoints. Internal PHP modules, config, logs, and CLI monitoring are outside the web root. Browsers must be able to download public CSS/JavaScript assets; all security enforcement happens in server-side PHP.
+**Important:** Launch the PHP development server with `-t frontend`; configure Apache DocumentRoot to `Project404/frontend`. Never serve the repository root or backend directory. Internal PHP modules, secrets, error logs and CLI scripts must not be directly accessible. Client-side JS cannot be hidden from the browser, so all security enforcement remains in server-side PHP.
 
 ## Practical four-week pacing
 

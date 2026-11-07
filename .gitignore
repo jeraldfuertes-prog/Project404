@@ -1,4 +1,10 @@
-# BillGuard - keep all secrets and generated files out of Git
+# BillGuard security: never commit secrets, runtime files, or dependencies
+/backend/config.php
+/backend/.env
+/backend/.env.*
+!/backend/.env.example
+/backend/vendor/
+/backend/logs/
 /config.php
 /.env
 /.env.*

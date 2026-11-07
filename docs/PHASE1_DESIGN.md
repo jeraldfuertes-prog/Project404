@@ -20,16 +20,20 @@ The selected style is cyberpunk: dark terminal surfaces, neon accents, thin HUD 
 
 Fonts: JetBrains Mono, Fira Code, and system monospace fallbacks. No external font dependency is required.
 
+## Frontend/backend separation
+
+`frontend/` is the only directory exposed by the development web server. It contains public PHP pages and browser assets. `backend/php/` contains shared server-side PHP. Future `backend/database/`, `backend/scripts/`, and private `backend/config.php` stay outside the browser-accessible directory. The current page markup and behavior are unchanged.
+
 ## Public pages now in the repository
 
 | Path | Purpose | Current behavior |
 | --- | --- | --- |
-| `public/index.php` | Public homepage and sample dashboard illustration | Illustrative amounts only |
-| `public/login.php` | Log-in visual preview | Inputs and submission intentionally disabled |
-| `public/register.php` | Proposed registration-field overview | No registration form yet; awaits signed approval |
-| `public/privacy.php` | Privacy Notice layout draft | Marked incomplete pending approved proposal |
-| `php/layout.php` | Shared page name above header, navigation, footer, safety headers | Guest routes only |
-| `public/css/cyberpunk.css` | Design tokens, components, layout, motion, breakpoints | Accessible focus styles and reduced-motion handling |
+| `frontend/index.php` | Public homepage and sample dashboard illustration | Illustrative amounts only |
+| `frontend/login.php` | Log-in visual preview | Inputs and submission intentionally disabled |
+| `frontend/register.php` | Proposed registration-field overview | No registration form yet; awaits signed approval |
+| `frontend/privacy.php` | Privacy Notice layout draft | Marked incomplete pending approved proposal |
+| `backend/php/layout.php` | Shared page name above header, navigation, footer, safety headers | Guest routes only |
+| `frontend/css/cyberpunk.css` | Design tokens, components, layout, motion, breakpoints | Accessible focus styles and reduced-motion handling |
 
 ## Try it on Windows
 
@@ -37,15 +41,15 @@ Use PHP 8.x. In the cloned Project404 root, run:
 
 ```powershell
 # If PHP is already on PATH:
-php -S 127.0.0.1:8000 -t public
+php -S 127.0.0.1:8000 -t frontend
 
 # Otherwise use the PHP included with XAMPP:
-C:\xampp\php\php.exe -S 127.0.0.1:8000 -t public
+C:\xampp\php\php.exe -S 127.0.0.1:8000 -t frontend
 ```
 
 Open **http://127.0.0.1:8000/** in your browser. The built-in server is for local development only.
 
-When using Apache/XAMPP later, make sure the configured site **DocumentRoot points to `Project404/public`** (rather than the repository root). Sensitive configuration, server-side modules, and scripts must be outside the served folder. Do not place a real `config.php` inside `public/`.
+When using Apache/XAMPP later, make sure the configured site **DocumentRoot points to `Project404/frontend`** (rather than the repository root). Sensitive configuration, server-side modules, and scripts must be outside the served `frontend/` folder. Do not place a real `config.php` inside `frontend/`.
 
 ## Design constraints carried from the handout
 

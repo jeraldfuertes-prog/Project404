@@ -36,7 +36,7 @@ Read **[docs/PHASES.md](docs/PHASES.md)** for the eight-phase roadmap, detailed 
 ## Security rules
 
 - Never commit actual database credentials, SMTP app passwords, CAPTCHA keys, encryption keys, or private user records.
-- Store real `config.php` and private logs outside the web-accessible `public/` directory; see `.gitignore`.
+- Store real `backend/config.php` and private logs outside the web-accessible `frontend/` directory; see `.gitignore`.
 - Server-side PHP must enforce all security rules; JavaScript helps usability but cannot be trusted for access control.
 - Uploaded and user-entered data must be validated and safely escaped before display.
 - The admin dashboard must remain read-only and unavailable to normal users.
@@ -44,13 +44,15 @@ Read **[docs/PHASES.md](docs/PHASES.md)** for the eight-phase roadmap, detailed 
 
 ## Phase 1 – Cyberpunk web design preview
 
+Project folders are separated: **`frontend/`** is the web root for pages and static assets, and **`backend/`** holds server-side PHP and future private services. Set Apache DocumentRoot or PHP's `-t` to `frontend/`, never to the repository root.
+
 A dark, neon cyberpunk design has been added to the public homepage and guest screens. The current PHP pages are **visual previews only**: registration, log-in, billing, OTPs, and account monitoring have **not** been implemented yet. The registration form is intentionally not started until the proposal is approved.
 
 To preview on Windows after cloning the repository:
 
 ```powershell
 cd Project404
-C:\xampp\php\php.exe -S 127.0.0.1:8000 -t public
+C:\xampp\php\php.exe -S 127.0.0.1:8000 -t frontend
 ```
 
 Then open http://127.0.0.1:8000/.
