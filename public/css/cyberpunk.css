@@ -221,6 +221,13 @@ strong { color: var(--cp-text); }
   0%, 100% { text-shadow: -2px 0 var(--cp-magenta), 2px 0 var(--cp-cyan); }
   50% { text-shadow: 2px 0 var(--cp-magenta), -2px 0 var(--cp-cyan); }
 }
+.hud__bar--1 { height: 43%; }
+.hud__bar--2 { height: 66%; }
+.hud__bar--3 { height: 52%; }
+.hud__bar--4 { height: 89%; }
+.hud__bar--5 { height: 72%; }
+.hud__bar--6 { height: 100%; }
+.hud__bar--7 { height: 61%; }
 @media (max-width: 900px) {
   .hero, .auth-layout { grid-template-columns: 1fr; }
   .features { grid-template-columns: repeat(2, minmax(0,1fr)); }
