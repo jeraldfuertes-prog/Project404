@@ -1,0 +1,14 @@
+# BillGuard - keep all secrets and generated files out of Git
+/config.php
+/.env
+/.env.*
+!/.env.example
+/vendor/
+/logs/
+*.log
+*.log.*
+/coverage/
+/tmp/
+/.cache/
+.DS_Store
+Thumbs.db
