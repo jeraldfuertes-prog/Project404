@@ -59,6 +59,20 @@ Then open http://127.0.0.1:8000/.
 
 See **[Phase 1 design notes](docs/PHASE1_DESIGN.md)** for the color palette, pages, accessibility and XAMPP/DocumentRoot guidance.
 
+## Phase 1 local setup (verification still required)
+
+Code for the database schema, PDO connection, CLI environment check and PHPMailer test email is now in the repository. **The tests have not been run on your Windows/XAMPP installation**, and a real SMTP message has not been verified in your inbox.
+
+Follow **[Phase 1 Windows Setup & Verification](docs/PHASE1_SETUP.md)** for exact PowerShell commands and phpMyAdmin instructions.
+
+- [Appendix A proposal draft](docs/APPENDIX_A_PROPOSAL_DRAFT.md) — **not approved yet**
+- [Student-number seed worksheet](docs/SEED_WORKSHEET.md) — use your own last two digits
+- [MySQL schema](backend/database/schema.sql) — import locally
+- [PHP/MySQL setup check](backend/scripts/check_setup.php) — use `--php-only` and `--db`
+- [SMTP test script](backend/scripts/test_email.php) — requires your locally stored SMTP settings and PHPMailer
+
+Security reminder: Never publish `backend/config.php`, SMTP App Passwords, or real household records. Keep `frontend/` as the only web-accessible root.
+
 ## Next step
 
 Complete **Phase 0**: fill in Appendix A using the proposed BillGuard field set, compute the seed parameters privately, and obtain instructor approval. Then start PHP/MySQL application development.
