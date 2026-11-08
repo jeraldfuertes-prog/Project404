@@ -23,6 +23,8 @@ try {
             http_response_code(403);
             bg_log($db, 'CSRF_REJECTED', null, null, ['page' => 'login']);
             $error = 'Your form session expired. Refresh and try again.';
+        } elseif (($_POST['privacy_ack'] ?? null) !== 'yes') {
+            $error = 'Please confirm the Privacy Notice to continue.';
         } else {
             $username = is_string($_POST['username'] ?? null) ? trim($_POST['username']) : '';
             $password = is_string($_POST['password'] ?? null) ? $_POST['password'] : '';
@@ -96,6 +98,12 @@ bg_page_start('Log-in', 'login');
                 <input class="form-control" id="captcha" name="captcha" type="text" minlength="6" maxlength="6"
                     autocomplete="off" placeholder="Enter the characters above" required>
             </div>
+            <label class="form-check simple-register__consent" for="privacy_ack">
+                <input id="privacy_ack" name="privacy_ack" type="checkbox" value="yes" required
+                    <?= ($_POST['privacy_ack'] ?? null) === 'yes' ? 'checked' : '' ?>>
+                <span>I have read the <a href="privacy.php" target="_blank" rel="noopener noreferrer">Privacy Notice</a>.
+                    <span class="form-required">*</span></span>
+            </label>
             <button class="button button--full" type="submit" <?= $locked > 0 ? 'disabled' : '' ?>>Sign In</button>
         </form>
         <?php if ($forgotShown): ?>
