@@ -46,7 +46,7 @@ try {
         $tables = (int) $db->query('SELECT COUNT(*) FROM information_schema.tables
             WHERE table_schema = DATABASE()')->fetchColumn();
         $good = report('MySQL connection and 9 tables', $tables >= 9) && $good;
-        $columns = $db->query("SELECT column_name, is_nullable FROM information_schema.columns
+        $columns = $db->query("SELECT column_name AS inspected_column, is_nullable AS nullable_state FROM information_schema.columns
             WHERE table_schema = DATABASE() AND table_name = 'users'
               AND column_name IN ('home_address','birthdate','street','barangay','city',
                 'province','country','zip_code','utility_account_ciphertext',
@@ -54,7 +54,7 @@ try {
                 'service_start_date','monthly_utility_budget')")->fetchAll();
         $schemaReady = count($columns) === 14;
         foreach ($columns as $column) {
-            if ($column['column_name'] !== 'home_address' && $column['is_nullable'] !== 'YES') {
+            if ($column['inspected_column'] !== 'home_address' && $column['nullable_state'] !== 'YES') {
                 $schemaReady = false;
             }
         }
