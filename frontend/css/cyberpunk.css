@@ -250,3 +250,79 @@ strong { color: var(--cp-text); }
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
   .glitch:hover { animation: none; }
 }
+
+
+/* Phase 2 — responsive registration, accessible field errors and OTP */
+.registration-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 310px;
+  gap: 22px;
+  align-items: start;
+  padding: 10px 0 84px;
+}
+.registration-form { min-width: 0; padding: clamp(18px, 3.6vw, 36px); }
+.registration-aside { display: grid; gap: 18px; }
+.registration-aside h2 { font-size: 1.6rem; }
+.registration-steps { list-style: none; padding: 0; margin: 22px 0 0; }
+.registration-steps li {
+  display: flex; gap: 13px; padding: 13px 0;
+  border-bottom: 1px dashed var(--cp-border-muted);
+  color: var(--cp-text); font-size: .8rem;
+}
+.registration-steps span { color: var(--cp-cyan); font-weight: 800; }
+.form-section { padding-block: 24px; border-bottom: 1px solid var(--cp-border-muted); }
+.form-section:first-of-type { padding-top: 0; }
+.form-section:last-of-type { border-bottom: 0; padding-bottom: 0; }
+.form-section__heading { display: flex; flex-direction: column; gap: 4px; margin-bottom: 17px; }
+.form-section__heading span { color: var(--cp-cyan); font-size: .69rem; letter-spacing: .11em; }
+.form-section__heading h2 { margin: 0; font-size: 1.28rem; }
+.form-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 3px 20px; }
+.form-grid--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.form-field { min-width: 0; }
+.form-field:focus-within .form-label { color: var(--cp-cyan); }
+.form-error { min-height: 0; }
+.form-error:empty { display: none; }
+.form-control[aria-invalid="true"] { border-color: #FF8694; }
+.form-check--small { margin-top: 9px; font-size: .75rem; }
+.button--full { width: 100%; }
+.strength-meter {
+  height: 7px; margin-top: 13px;
+  border: 1px solid var(--cp-border-muted); overflow: hidden;
+  background: #10191a;
+}
+.strength-meter span {
+  display: block; height: 100%; width: 0;
+  transition: width .18s ease, background-color .18s ease;
+}
+.strength-meter[data-level="1"] span { width: 33.333%; background: #FF7386; }
+.strength-meter[data-level="2"] span { width: 66.666%; background: #FFD700; }
+.strength-meter[data-level="3"] span { width: 100%; background: #00FF00; }
+.captcha-frame {
+  display: flex; align-items: center; flex-wrap: wrap;
+  gap: 14px; margin-bottom: 12px;
+}
+.captcha-frame img {
+  display: block; max-width: 100%; height: auto;
+  border: 1px solid rgba(0,255,255,.45);
+  border-radius: 5px;
+}
+.otp-input { max-width: 240px; font-size: 1.5rem; letter-spacing: .25em; font-weight: 700; }
+.resend-form { margin-top: 20px; border-top: 1px solid var(--cp-border-muted); padding-top: 20px; }
+.notice--error { border-color: #FF8694; color: #FFD2D8; background: rgba(255,69,85,.08); }
+.trap-field {
+  position: absolute; left: -10000px; top: auto;
+  width: 1px; height: 1px; overflow: hidden;
+}
+.is-hidden { display: none !important; }
+#username-availability[data-status="available"] { color: #80FFAE; }
+#username-availability[data-status="unavailable"] { color: #FF8694; }
+@media (max-width: 1050px) {
+  .registration-layout { grid-template-columns: minmax(0,1fr); }
+  .registration-aside { grid-template-columns: repeat(2, minmax(0,1fr)); }
+}
+@media (max-width: 640px) {
+  .form-grid--2, .registration-aside { grid-template-columns: 1fr; }
+  .registration-form { padding: 20px; }
+  .captcha-frame { align-items: stretch; }
+  .captcha-frame .button { width: 100%; }
+}
