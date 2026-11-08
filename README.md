@@ -3,7 +3,7 @@
 
 IT 107 – Information Assurance and Security I · Final Laboratory Project
 
-> **Project status (November 8, 2026):** Phase 0 (proposal and personal seed) **complete, as reported by the project owner**. Phase 1 (environment setup and Cyberpunk UI) **complete**. Phase 2 (registration, CAPTCHA and registration OTP) **implemented in code, pending local end-to-end testing**. The basic secure login and user dashboard are also implemented ahead of the remaining Phase 3 work. This repository is the official project repository.
+> **November 8 scope update:** Registration is now a compact, single-page form (First Name, Last Name, one Home Address, Email, Username and Password), followed by email OTP. Login contains CAPTCHA and Privacy Notice acknowledgment. **IMPORTANT:** This intentionally omits instructor-required registration fields, so obtain written instructor approval for the amended scope or restore them before the final checkpoint. Apply the database migration first: [Simplified registration migration guide](docs/SIMPLE_REGISTER_MIGRATION.md). A small Privacy Notice consent checkbox stays on signup because personal information is stored at account creation.\n\n> **Project status (November 8, 2026):** Phase 0 (proposal and personal seed) **complete, as reported by the project owner**. Phase 1 (environment setup and Cyberpunk UI) **complete**. Phase 2 (registration, CAPTCHA and registration OTP) **implemented in code, pending local end-to-end testing**. The basic secure login and user dashboard are also implemented ahead of the remaining Phase 3 work. This repository is the official project repository.
 
 ## Purpose
 
@@ -75,7 +75,7 @@ Security reminder: Never publish `backend/config.php`, SMTP App Passwords, or re
 
 ## Simple registration and protected dashboard
 
-The registration screen is now a **three-step form** that begins with Full Name, Birthdate and Email. The remaining required fields appear in subsequent steps so the UX is easier to follow **without violating the IT 107 required-field rules**.
+The registration screen is now a **single compact form** with only first and last name, one home address field and login credentials, plus folded recovery questions and required inline privacy consent. **This no longer meets the handout's complete registration-field and registration-CAPTCHA checklist.**
 
 The login screen now accepts username/password/CAPTCHA, emails a login OTP, and directs the verified user to the **session-protected dashboard**. Newly registered accounts have an empty billing dashboard until the bill management module is implemented.
 
@@ -84,11 +84,11 @@ See **[Step-by-step testing and instructions](docs/SIMPLE_LOGIN_REGISTER.md)**. 
 ## Phase 2 — secure registration in progress
 
 The current Phase 2 implementation adds:
-- Registration with core and four BillGuard-specific fields, age calculation, red required/optional indicators and exact field errors.
+- Simplified registration with name, single-line address, email, username, password and confirm password. Required course fields were removed at the owner's direction; instructor sign-off on the change is still needed.
 - Live password meter and username availability check, plus strict PHP validation with JavaScript disabled.
 - Three seed-selected recovery questions, hashed passwords and answers, RA 10173 consent timestamp.
-- Server-side session CAPTCHA using PHP GD, CSRF check and honeypot.
-- AES-256-GCM encryption of the utility account identifier.
+- PHP GD CAPTCHA on Login (not registration), with CSRF and honeypot protections on registration.
+- AES-256-GCM helper reserved for future utility account numbers; no utility identifier is collected during simplified signup.
 - Registration email OTP, hashed/expiring/single-use, three wrong attempts, 60-second resend and 3 per 15-minute limit.
 - Security activity log entries for key registration/verification events.
 
