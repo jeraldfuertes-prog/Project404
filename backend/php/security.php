@@ -88,14 +88,8 @@ function bg_registration_ready(array $config): bool
     if (!filter_var($config['privacy_contact'], FILTER_VALIDATE_EMAIL)) {
         return false;
     }
-    $key = (string) ($config['encryption_key'] ?? '');
-    if (!str_starts_with($key, 'base64:')) {
-        return false;
-    }
-    $binaryKey = base64_decode(substr($key, 7), true);
-    if ($binaryKey === false || strlen($binaryKey) !== 32) {
-        return false;
-    }
+    // The simplified registration no longer collects utility account identifiers.
+    // The AES key is still needed for encryption when the bill-management module is built.
     foreach (['smtp_host', 'smtp_user', 'smtp_password', 'smtp_from'] as $k) {
         if (!is_string($config[$k] ?? null)
             || trim($config[$k]) === ''
