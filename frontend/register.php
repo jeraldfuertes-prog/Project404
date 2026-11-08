@@ -72,7 +72,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                             ':first' => $values['first_name'],
                             ':middle' => $values['middle_name'] === '' ? null : $values['middle_name'],
                             ':family' => $values['family_name'],
-                            ':extension' => $values['name_extension'] === '' ? null : $values['name_extension'],
+                            ':extension' => $values['name_extension'] === '' ? null : ($values['name_extension'] === 'Other' ? $values['extension_other'] : $values['name_extension']),
                             ':birthdate' => $values['birthdate'],
                             ':street' => $values['street'],
                             ':barangay' => $values['barangay'],
