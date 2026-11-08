@@ -1,6 +1,6 @@
 # BillGuard – Development Phase Structure
 
-This roadmap follows the IT 107 **Security1 Student Handout**. **Status (November 8, 2026): Phase 0 and Phase 1 complete according to the project owner; Phase 2 is next.** Before implementing the registration form, use the instructor-approved Appendix A fields and student's personal seed values rather than placeholder defaults.
+This roadmap follows the IT 107 **Security1 Student Handout**. **Scope change (Nov 8):** The user requested a shorter signup form without mandatory ID, birthdate, split address, four custom utility fields or registration CAPTCHA. This is **not fully handout-compliant**. Obtain approval of the changed scope or restore those required fields before Checkpoint 2. See [simplified registration migration](SIMPLE_REGISTER_MIGRATION.md). **Status (November 8, 2026): Phase 0 and Phase 1 complete according to the project owner; Phase 2 is next.** Before implementing the registration form, use the instructor-approved Appendix A fields and student's personal seed values rather than placeholder defaults.
 
 ## Phase 0 — Proposal and personal seed (Week 1) — COMPLETED (owner-confirmed)
 
