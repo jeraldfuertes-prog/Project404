@@ -147,7 +147,7 @@ bg_page_start('Register', 'register');
                 <div class="form-field">
                     <label class="form-label" for="first_name">First Name <span class="form-required">*</span></label>
                     <input class="form-control" id="first_name" name="first_name" type="text"
-                        autocomplete="given-name" placeholder="Juan" required
+                        autocomplete="given-name" placeholder="Enter your first name" required
                         maxlength="<?= (int) ($seed['name_max'] ?? 29) ?>"
                         value="<?= $value('first_name') ?>" aria-describedby="error-first_name">
                     <?= $error('first_name') ?>
@@ -155,7 +155,7 @@ bg_page_start('Register', 'register');
                 <div class="form-field">
                     <label class="form-label" for="family_name">Last Name <span class="form-required">*</span></label>
                     <input class="form-control" id="family_name" name="family_name" type="text"
-                        autocomplete="family-name" placeholder="Dela Cruz" required
+                        autocomplete="family-name" placeholder="Enter your last name" required
                         maxlength="<?= (int) ($seed['name_max'] ?? 29) ?>"
                         value="<?= $value('family_name') ?>" aria-describedby="error-family_name">
                     <?= $error('family_name') ?>
@@ -165,7 +165,7 @@ bg_page_start('Register', 'register');
             <div class="form-field">
                 <label class="form-label" for="home_address">Home Address <span class="form-required">*</span></label>
                 <input class="form-control" id="home_address" name="home_address" type="text"
-                    autocomplete="street-address" placeholder="Purok 3, San Isidro, Cabadbaran City"
+                    autocomplete="street-address" placeholder="Enter your complete home address"
                     minlength="5" maxlength="180" required
                     value="<?= $value('home_address') ?>" aria-describedby="error-home_address">
                 <?= $error('home_address') ?>
