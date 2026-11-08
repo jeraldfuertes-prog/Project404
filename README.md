@@ -3,7 +3,18 @@
 
 IT 107 – Information Assurance and Security I · Final Laboratory Project
 
-> **November 8 scope update:** Registration is now a compact, single-page form (First Name, Last Name, one Home Address, Email, Username and Password), followed by email OTP. Login contains CAPTCHA and Privacy Notice acknowledgment. **IMPORTANT:** This intentionally omits instructor-required registration fields, so obtain written instructor approval for the amended scope or restore them before the final checkpoint. Apply the database migration first: [Simplified registration migration guide](docs/SIMPLE_REGISTER_MIGRATION.md). A small Privacy Notice consent checkbox stays on signup because personal information is stored at account creation.\n\n> **Project status (November 8, 2026):** Phase 0 (proposal and personal seed) **complete, as reported by the project owner**. Phase 1 (environment setup and Cyberpunk UI) **complete**. Phase 2 (registration, CAPTCHA and registration OTP) **implemented in code, pending local end-to-end testing**. The basic secure login and user dashboard are also implemented ahead of the remaining Phase 3 work. This repository is the official project repository.
+> **November 8 scope update:** Registration is now a compact, single-page form (First Name, Last Name, one Home Address, Email, Username and Password), followed by email OTP. Login contains CAPTCHA and Privacy Notice acknowledgment. **IMPORTANT:** This intentionally omits instructor-required registration fields, so obtain written instructor approval for the amended scope or restore them before the final checkpoint. Apply the database migration first: [Simplified registration migration guide](docs/SIMPLE_REGISTER_MIGRATION.md). A small Privacy Notice consent checkbox stays on signup because personal information is stored at account creation.
+
+> **Project status (November 8, 2026):** Phase 0 (proposal and personal seed) **complete, as reported by the project owner**. Phase 1 (environment setup and Cyberpunk UI) **complete**. Phase 2 (registration, CAPTCHA and registration OTP) **implemented in code, pending local end-to-end testing**. The basic secure login and user dashboard are also implemented ahead of the remaining Phase 3 work. This repository is the official project repository.
+
+## Dashboard implementation (November 8, 2026)
+
+The authenticated BillGuard dashboard now includes a **Cyberpunk collapsible/sliding sidebar**, live household totals, add/edit/delete utility bills, manually recorded partial/full payments, exact remaining balances, seven-day and overdue reminders, and profile name/address settings. Utility types are **Electricity, Water, Internet, and Other**; the Other option requires a custom utility name.
+
+**The owner's local database requires a one-time migration before the new features work:**
+[Dashboard migration and testing guide](docs/DASHBOARD_IMPLEMENTATION.md). The upgrade is implemented in source code and covered by CI; local browser/MySQL verification remains pending.
+
+**Important limitations:** Payment recording does not transfer money; reminders are calculated when pages are opened, not sent as email/push notifications; email/password changes and admin security monitoring remain future work. The instructor must still approve the earlier simplified registration deviations.
 
 ## Purpose
 
@@ -46,7 +57,7 @@ Read **[docs/PHASES.md](docs/PHASES.md)** for the eight-phase roadmap, detailed 
 
 Project folders are separated: **`frontend/`** is the web root for pages and static assets, and **`backend/`** holds server-side PHP and future private services. Set Apache DocumentRoot or PHP's `-t` to `frontend/`, never to the repository root.
 
-A dark, neon cyberpunk design is used throughout. The **registration form, CAPTCHA and registration email OTP are now implemented (Phase 2)**, but they remain gated until you configure the approved seed, private AES key, privacy details and GD extension. **A secure login with email OTP and session-protected read-only dashboard now work in code; bill entry/payment, password recovery and admin monitoring remain future phases.**
+A dark, neon cyberpunk design is used throughout. The **registration form, CAPTCHA and registration email OTP are now implemented (Phase 2)**, but they remain gated until you configure the approved seed, private AES key, privacy details and GD extension. **The secure email-OTP login and account-protected dashboard are implemented.** Bill entry and payment recording are now available in source after applying the required database migration; password recovery and admin monitoring remain future phases.
 
 To preview on Windows after cloning the repository:
 
@@ -77,9 +88,9 @@ Security reminder: Never publish `backend/config.php`, SMTP App Passwords, or re
 
 The registration screen is now a **single compact form** with only first and last name, one home address field and login credentials, plus folded recovery questions and required inline privacy consent. **This no longer meets the handout's complete registration-field and registration-CAPTCHA checklist.**
 
-The login screen now accepts username/password/CAPTCHA, emails a login OTP, and directs the verified user to the **session-protected dashboard**. Newly registered accounts have an empty billing dashboard until the bill management module is implemented.
+The login screen now accepts username/password/CAPTCHA, emails a login OTP, and directs the verified user to the **session-protected dashboard**. Newly registered accounts start with an empty dashboard; the owner can now add bills and payment records after applying the required Other-utility database migration.
 
-See **[Step-by-step testing and instructions](docs/SIMPLE_LOGIN_REGISTER.md)**. **This has not yet been verified in the owner's local browser.** The GitHub syntax and unit tests are separate checks.
+See **[Step-by-step testing and instructions](docs/SIMPLE_LOGIN_REGISTER.md)**. **The project owner confirmed registration OTP, Login CAPTCHA and Login OTP work in their browser.** The newly built bill-management and sidebar flow still need local testing.
 
 ## Phase 2 — secure registration in progress
 
