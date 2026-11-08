@@ -32,3 +32,35 @@ jobs:
         run: php backend/tests/mail_transport_test.php
       - name: Validate seeded login lockouts and security thresholds
         run: php backend/tests/auth_rules_test.php
+
+
+  billing-integration:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: billing_ci_test_only
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -pbilling_ci_test_only"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up PHP 8.3
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: pdo_mysql, mbstring
+          coverage: none
+      - name: Validate real MySQL billing transactions and account isolation
+        env:
+          BG_TEST_DB_HOST: 127.0.0.1
+          BG_TEST_DB_PASS: billing_ci_test_only
+        run: php backend/tests/billing_integration_test.php
