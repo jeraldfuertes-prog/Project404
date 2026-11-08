@@ -142,7 +142,7 @@ function bg_log(PDO $db, string $event, ?string $username = null, ?string $userI
     $agent = substr((string) ($_SERVER['HTTP_USER_AGENT'] ?? 'CLI'), 0, 512);
     $query->execute([
         ':event' => $event,
-        ':username' => $username,
+        ':username' => $username === null ? null : substr($username, 0, 255),
         ':userid' => $userId,
         ':ip' => $ip,
         ':agent' => $agent,
