@@ -3,7 +3,7 @@
 
 IT 107 – Information Assurance and Security I · Final Laboratory Project
 
-> **Project status (November 8, 2026):** Phase 0 (proposal and personal seed) **complete, as reported by the project owner**. Phase 1 (environment setup and Cyberpunk UI) **complete**. Phase 2 (registration, CAPTCHA and verification OTP) **next**. This repository is the official project repository.
+> **Project status (November 8, 2026):** Phase 0 (proposal and personal seed) **complete, as reported by the project owner**. Phase 1 (environment setup and Cyberpunk UI) **complete**. Phase 2 (registration, CAPTCHA and verification OTP) **implemented in code, pending local end-to-end testing**. This repository is the official project repository.
 
 ## Purpose
 
@@ -42,30 +42,30 @@ Read **[docs/PHASES.md](docs/PHASES.md)** for the eight-phase roadmap, detailed 
 - The admin dashboard must remain read-only and unavailable to normal users.
 
 
-## Phase 1 – Cyberpunk web design preview
+## Phase 1 – Cyberpunk web design and local setup
 
 Project folders are separated: **`frontend/`** is the web root for pages and static assets, and **`backend/`** holds server-side PHP and future private services. Set Apache DocumentRoot or PHP's `-t` to `frontend/`, never to the repository root.
 
-A dark, neon cyberpunk design has been added to the public homepage and guest screens. The current PHP pages are **visual previews only**: registration, log-in, billing, OTPs, and account monitoring have **not** been implemented yet. The registration form is intentionally not started until the proposal is approved.
+A dark, neon cyberpunk design is used throughout. The **registration form, CAPTCHA and registration email OTP are now implemented (Phase 2)**, but they remain gated until you configure the approved seed, private AES key, privacy details and GD extension. **Login, household billing and admin monitoring remain previews/future phases.**
 
 To preview on Windows after cloning the repository:
 
 ```powershell
 cd Project404
-C:\xampp\php\php.exe -S 127.0.0.1:8000 -t frontend
+& "D:\php83\php.exe" -S localhost:8000 -t frontend
 ```
 
 Then open http://127.0.0.1:8000/.
 
 See **[Phase 1 design notes](docs/PHASE1_DESIGN.md)** for the color palette, pages, accessibility and XAMPP/DocumentRoot guidance.
 
-## Phase 1 local setup (verification still required)
+## Phase 1 local setup (verified by project owner)
 
-Code for the database schema, PDO connection, CLI environment check and PHPMailer test email is now in the repository. **The tests have not been run on your Windows/XAMPP installation**, and a real SMTP message has not been verified in your inbox.
+PHP 8.3.36, Composer 2.11.1, PHPMailer 6.12.0, SMTP inbox delivery, MySQL PDO connectivity and all 9 tables were **successfully verified by the project owner** in Windows PowerShell.
 
 Follow **[Phase 1 Windows Setup & Verification](docs/PHASE1_SETUP.md)** for exact PowerShell commands and phpMyAdmin instructions.
 
-- [Appendix A proposal draft](docs/APPENDIX_A_PROPOSAL_DRAFT.md) — **not approved yet**
+- [Appendix A proposal draft](docs/APPENDIX_A_PROPOSAL_DRAFT.md) — original template; owner confirms Phase 0 is complete
 - [Student-number seed worksheet](docs/SEED_WORKSHEET.md) — use your own last two digits
 - [MySQL schema](backend/database/schema.sql) — import locally
 - [PHP/MySQL setup check](backend/scripts/check_setup.php) — use `--php-only` and `--db`
@@ -73,6 +73,18 @@ Follow **[Phase 1 Windows Setup & Verification](docs/PHASE1_SETUP.md)** for exac
 
 Security reminder: Never publish `backend/config.php`, SMTP App Passwords, or real household records. Keep `frontend/` as the only web-accessible root.
 
-## Next step
+## Phase 2 — secure registration in progress
 
-Begin **Phase 2**: confirm the instructor-approved four registration fields and the personal seed-derived limits before implementing the secure registration flow. Keep any full student number, credentials, and personal records out of the public repository.
+The current Phase 2 implementation adds:
+- Registration with core and four BillGuard-specific fields, age calculation, red required/optional indicators and exact field errors.
+- Live password meter and username availability check, plus strict PHP validation with JavaScript disabled.
+- Three seed-selected recovery questions, hashed passwords and answers, RA 10173 consent timestamp.
+- Server-side session CAPTCHA using PHP GD, CSRF check and honeypot.
+- AES-256-GCM encryption of the utility account identifier.
+- Registration email OTP, hashed/expiring/single-use, three wrong attempts, 60-second resend and 3 per 15-minute limit.
+- Security activity log entries for key registration/verification events.
+
+**Local configuration required:** see [Phase 2 Setup](docs/PHASE2_SETUP.md), [Error Message Mapping](docs/PHASE2_ERROR_MAPPING.md) and [Design Decisions](docs/PHASE2_DESIGN_DECISIONS.md). Use the approved proposal and private student seed; NEVER commit credentials, AES key or a full student number.
+
+**Next step:** run `php backend/scripts/check_phase2.php`, run the rule tests, start the site with `-t frontend`, and test registration + inbox OTP end-to-end. Phase 2 is **not complete until those tests pass**. Login remains Phase 3.
+
