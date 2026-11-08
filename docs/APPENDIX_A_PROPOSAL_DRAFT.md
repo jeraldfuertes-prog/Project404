@@ -1,4 +1,7 @@
-# Appendix A — BillGuard System Proposal (DRAFT / NOT YET APPROVED)
+# Appendix A — BillGuard System Proposal (ORIGINAL DRAFT / SUPERSEDED)
+
+> **IMPORTANT SCOPE CHANGE — November 8, 2026:** BillGuard's registration form was simplified at the project owner's request. It no longer collects manual ID Number, birthdate, six address components or the four utility-specific fields listed below; CAPTCHA now appears on Login instead of Registration. The proposal below is the **original draft**, not a description of the active signup code. As this conflicts with the IT 107 registration requirements and the formerly approved project scope, **obtain written instructor approval of the amendment or restore required fields** before Checkpoint 2. See [simplified migration guide](SIMPLE_REGISTER_MIGRATION.md).
+
 
 **Course:** IT 107 – Information Assurance and Security I  
 **Project owner:** __________________  
