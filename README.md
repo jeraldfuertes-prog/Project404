@@ -3,7 +3,7 @@
 
 IT 107 – Information Assurance and Security I · Final Laboratory Project
 
-> **Status: Planning.** The Appendix A System Proposal and personal seed table must be approved before implementing registration. This repository is the official project repository.
+> **Project status (November 8, 2026):** Phase 0 (proposal and personal seed) **complete, as reported by the project owner**. Phase 1 (environment setup and Cyberpunk UI) **complete**. Phase 2 (registration, CAPTCHA and verification OTP) **next**. This repository is the official project repository.
 
 ## Purpose
 
@@ -75,4 +75,4 @@ Security reminder: Never publish `backend/config.php`, SMTP App Passwords, or re
 
 ## Next step
 
-Complete **Phase 0**: fill in Appendix A using the proposed BillGuard field set, compute the seed parameters privately, and obtain instructor approval. Then start PHP/MySQL application development.
+Begin **Phase 2**: confirm the instructor-approved four registration fields and the personal seed-derived limits before implementing the secure registration flow. Keep any full student number, credentials, and personal records out of the public repository.
