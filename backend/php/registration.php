@@ -38,6 +38,18 @@ function bg_name_error(string $value, string $label, int $max): ?string
     return null;
 }
 
+function bg_home_address_error(string $address): ?string
+{
+    if (!mb_check_encoding($address, 'UTF-8') || preg_match('/\p{C}/u', $address)) {
+        return 'Home Address contains unsupported control characters.';
+    }
+    $length = mb_strlen($address, 'UTF-8');
+    if ($length < 5 || $length > 180) {
+        return 'Home Address must contain between 5 and 180 characters.';
+    }
+    return null;
+}
+
 function bg_address_error(string $value, string $label, bool $street): ?string
 {
     if ($street) {
@@ -93,12 +105,8 @@ function bg_validate_registration(array $input, array $seed, PDO $db): array
         if ($message !== null) $errors[$key] = $message;
     }
 
-    $address = $clean['home_address'];
-    if (!mb_check_encoding($address, 'UTF-8') || preg_match('/\p{C}/u', $address)) {
-        $errors['home_address'] = 'Home Address contains unsupported control characters.';
-    } elseif (mb_strlen($address, 'UTF-8') < 5 || mb_strlen($address, 'UTF-8') > 180) {
-        $errors['home_address'] = 'Home Address must contain between 5 and 180 characters.';
-    }
+    $addressError = bg_home_address_error($clean['home_address']);
+    if ($addressError !== null) $errors['home_address'] = $addressError;
 
     $email = strtolower($clean['email']);
     $clean['email'] = $email;
