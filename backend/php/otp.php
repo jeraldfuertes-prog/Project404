@@ -15,37 +15,49 @@ function bg_send_otp(PDO $db, string $userId, string $email, string $purpose, ar
     $now = bg_now();
     $nowSql = $now->format('Y-m-d H:i:s');
     $window = $now->modify('-15 minutes')->format('Y-m-d H:i:s');
-    $latest = $db->prepare('SELECT created_at FROM one_time_passwords
-                            WHERE user_id = :uid AND purpose = :purpose
-                            ORDER BY id DESC LIMIT 1');
-    $latest->execute([':uid' => $userId, ':purpose' => $purpose]);
-    $last = $latest->fetch();
-
-    if ($resend) {
-        $countQ = $db->prepare('SELECT COUNT(*) FROM one_time_passwords
-            WHERE user_id = :uid AND purpose = :purpose AND created_at >= :window');
-        $countQ->execute([':uid' => $userId, ':purpose' => $purpose, ':window' => $window]);
-        // Initial code + at most 3 resends in any 15-minute window.
-        if ((int) $countQ->fetchColumn() >= 4) {
-            return ['ok' => false, 'message' => 'Maximum of three resends in 15 minutes reached. Try again later.'];
-        }
-        if ($last) {
-            $seconds = $now->getTimestamp() - strtotime((string) $last['created_at']);
-            if ($seconds < 60) {
-                $left = max(1, 60 - $seconds);
-                return ['ok' => false, 'message' => "Please wait {$left} seconds before resending.", 'wait' => $left];
-            }
-        }
-    }
-    $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-    $hash = password_hash($code, PASSWORD_DEFAULT);
-    $expires = $now->modify('+' . $seed['otp_expiry'] . ' minutes');
-    $expiry = $expires->format('Y-m-d H:i:s');
 
     try {
         $db->beginTransaction();
+        // Serialize simultaneous resend/verify requests for this account.
+        $lock = $db->prepare('SELECT id_number FROM users WHERE id_number = :uid FOR UPDATE');
+        $lock->execute([':uid' => $userId]);
+        if (!$lock->fetchColumn()) {
+            $db->rollBack();
+            return ['ok' => false, 'message' => 'This registration session is no longer valid.'];
+        }
+
+        $latest = $db->prepare('SELECT created_at FROM one_time_passwords
+            WHERE user_id = :uid AND purpose = :purpose ORDER BY id DESC LIMIT 1');
+        $latest->execute([':uid' => $userId, ':purpose' => $purpose]);
+        $last = $latest->fetch();
+
+        if ($resend) {
+            $countQ = $db->prepare('SELECT COUNT(*) FROM one_time_passwords
+                WHERE user_id = :uid AND purpose = :purpose AND created_at >= :window');
+            $countQ->execute([':uid' => $userId, ':purpose' => $purpose, ':window' => $window]);
+            // Initial code + no more than 3 resends within 15 minutes.
+            if ((int) $countQ->fetchColumn() >= 4) {
+                $db->rollBack();
+                return ['ok' => false, 'message' => 'Maximum of three resends in 15 minutes reached. Try again later.'];
+            }
+            if ($last) {
+                $seconds = $now->getTimestamp() - strtotime((string) $last['created_at']);
+                if ($seconds < 60) {
+                    $left = max(1, 60 - $seconds);
+                    $db->rollBack();
+                    return ['ok' => false, 'message' => "Please wait {$left} seconds before resending.", 'wait' => $left];
+                }
+            }
+        }
+
+        $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        $hash = password_hash($code, PASSWORD_DEFAULT);
+        $expires = $now->modify('+' . $seed['otp_expiry'] . ' minutes');
+        $expiry = $expires->format('Y-m-d H:i:s');
+
         $cancel = $db->prepare('UPDATE one_time_passwords SET cancelled_at = :now
-            WHERE user_id = :uid AND purpose = :purpose AND consumed_at IS NULL AND cancelled_at IS NULL');
+            WHERE user_id = :uid AND purpose = :purpose
+            AND consumed_at IS NULL AND cancelled_at IS NULL');
         $cancel->execute([':now' => $nowSql, ':uid' => $userId, ':purpose' => $purpose]);
 
         $insert = $db->prepare('INSERT INTO one_time_passwords
@@ -71,6 +83,9 @@ function bg_verify_registration_otp(PDO $db, string $userId, string $submitted):
     $validFormat = preg_match('/^\\d{6}$/D', $submitted) === 1;
     try {
         $db->beginTransaction();
+        $userLock = $db->prepare('SELECT id_number FROM users WHERE id_number = :uid FOR UPDATE');
+        $userLock->execute([':uid' => $userId]);
+        if (!$userLock->fetchColumn()) { throw new RuntimeException('Account not found.'); }
         $q = $db->prepare('SELECT id, otp_hash, expires_at, failed_attempts, consumed_at, cancelled_at
             FROM one_time_passwords WHERE user_id = :uid AND purpose = :purpose
             ORDER BY id DESC LIMIT 1 FOR UPDATE');
