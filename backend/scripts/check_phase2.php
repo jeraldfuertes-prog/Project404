@@ -36,7 +36,9 @@ try {
     $good = report('Privacy contact and retention', $privacyOkay) && $good;
     $key = (string) ($config['encryption_key'] ?? '');
     $binary = str_starts_with($key, 'base64:') ? base64_decode(substr($key, 7), true) : false;
-    $good = report('Private AES-256 key configured', is_string($binary) && strlen($binary) === 32) && $good;
+    fwrite(STDOUT, 'AES-256 key for future bill features: '
+        . (is_string($binary) && strlen($binary) === 32 ? 'CONFIGURED' : 'NOT CONFIGURED (optional for simplified signup)')
+        . PHP_EOL);
     $good = report('SMTP and enrollment config', bg_registration_ready($config)) && $good;
 
     try {
@@ -44,6 +46,19 @@ try {
         $tables = (int) $db->query('SELECT COUNT(*) FROM information_schema.tables
             WHERE table_schema = DATABASE()')->fetchColumn();
         $good = report('MySQL connection and 9 tables', $tables >= 9) && $good;
+        $columns = $db->query("SELECT column_name, is_nullable FROM information_schema.columns
+            WHERE table_schema = DATABASE() AND table_name = 'users'
+              AND column_name IN ('home_address','birthdate','street','barangay','city',
+                'province','country','zip_code','utility_account_ciphertext',
+                'utility_account_iv','utility_account_tag','primary_utility_type',
+                'service_start_date','monthly_utility_budget')")->fetchAll();
+        $schemaReady = count($columns) === 14;
+        foreach ($columns as $column) {
+            if ($column['column_name'] !== 'home_address' && $column['is_nullable'] !== 'YES') {
+                $schemaReady = false;
+            }
+        }
+        $good = report('Simplified registration database migration', $schemaReady) && $good;
     } catch (Throwable $e) {
         $good = report('MySQL connection and 9 tables', false) && $good;
     }
@@ -53,6 +68,6 @@ try {
 }
 
 fwrite(STDOUT, $good
-    ? "Preflight passed. Test actual registration, CAPTCHA and email OTP in a browser next.\n"
-    : "Complete the missing items using docs/PHASE2_SETUP.md.\n");
+    ? "Preflight passed. Test the compact registration, login CAPTCHA, and email OTP in Chrome next.\n"
+    : "Complete the missing items using docs/SIMPLE_REGISTER_MIGRATION.md.\n");
 exit($good ? 0 : 1);
