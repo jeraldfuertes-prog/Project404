@@ -26,30 +26,14 @@ function bg_date(string $text): ?DateTimeImmutable
 
 function bg_name_error(string $value, string $label, int $max): ?string
 {
+    // Allow uppercase, Unicode/accented letters and printable special characters.
+    // Reject only control characters/invalid text and enforce required length.
+    if (!mb_check_encoding($value, 'UTF-8') || preg_match('/\p{C}/u', $value)) {
+        return "{$label} contains unsupported control characters.";
+    }
     $length = mb_strlen($value, 'UTF-8');
     if ($length < 2 || $length > $max) {
         return "{$label} must contain between 2 and {$max} characters.";
-    }
-    if (preg_match('/\d/u', $value)) {
-        return "Numbers are not allowed in {$label}.";
-    }
-    if (preg_match('/[^A-Za-z ]/', $value)) {
-        return "Special characters are not allowed in {$label}.";
-    }
-    if (str_contains($value, '  ')) {
-        return "Double space is not allowed in {$label}.";
-    }
-    if (preg_match('/(.)\1\1/i', $value)) {
-        return "Three consecutive identical letters are not allowed in {$label}.";
-    }
-    if (strtoupper($value) === $value) {
-        return 'Do not use all capital letters in ' . $label . '.';
-    }
-    if (!preg_match('/^[A-Z]/', $value)) {
-        return "First letter of your {$label} must be capital.";
-    }
-    if (!preg_match('/^[A-Z][a-z]*(?: [A-Z][a-z]*)*$/D', $value)) {
-        return "{$label} must use Title Case (for example: Juan Carlo).";
     }
     return null;
 }
@@ -110,9 +94,10 @@ function bg_validate_registration(array $input, array $seed, PDO $db): array
     }
 
     $address = $clean['home_address'];
-    if (strlen($address) < 5 || strlen($address) > 180 || str_contains($address, '  ')
-        || !preg_match('/^[A-Za-z0-9 ,.#\/-]+$/D', $address)) {
-        $errors['home_address'] = 'Home Address must contain 5 to 180 letters, digits, spaces, commas, dots, #, / or hyphens, without double spaces.';
+    if (!mb_check_encoding($address, 'UTF-8') || preg_match('/\p{C}/u', $address)) {
+        $errors['home_address'] = 'Home Address contains unsupported control characters.';
+    } elseif (mb_strlen($address, 'UTF-8') < 5 || mb_strlen($address, 'UTF-8') > 180) {
+        $errors['home_address'] = 'Home Address must contain between 5 and 180 characters.';
     }
 
     $email = strtolower($clean['email']);
