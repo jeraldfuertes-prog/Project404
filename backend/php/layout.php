@@ -22,7 +22,7 @@ function bg_page_start(string $title, string $page = 'home'): void
     // After login OTP, show Home and Logout. For guests, use handout navigation.
     $loggedIn = isset($_SESSION['user_id']) && is_string($_SESSION['user_id']);
     if ($loggedIn) {
-        $navigation = ['home' => ['Home', 'index.php'], 'dashboard' => ['Dashboard', 'dashboard.php']];
+        $navigation = ['home' => ['Home', 'index.php']];
     } elseif ($page === 'login' || $page === 'login-otp') {
         $navigation = ['home' => ['Home', 'index.php'], 'register' => ['Register', 'register.php']];
     } elseif ($page === 'register' || $page === 'verify-otp') {
