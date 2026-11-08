@@ -1,4 +1,4 @@
-# BillGuard Phase 2 — Secure Registration Setup & Test Guide
+> **UPDATED:** The current registration form was simplified after this guide was written. For current setup, database migration and required tests see [SIMPLE_REGISTER_MIGRATION.md](SIMPLE_REGISTER_MIGRATION.md). Some older field examples below describe the previous full registration form and should NOT be used as current test instructions.\n\n# BillGuard Phase 2 — Secure Registration Setup & Test Guide
 
 **Status: code implemented, local verification needed.** This file is written for your Windows computer with PHP 8.3 at `D:\php83\php.exe`, XAMPP MySQL, Composer/PHPMailer and VS Code.
 
