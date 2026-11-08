@@ -1,23 +1,25 @@
 -- BillGuard / IT 107: Development schema (no personal data or test accounts)
 -- Run this file in phpMyAdmin SQL/Import or the MySQL command-line client.
 -- MySQL 8.x; use a dedicated database account in the application.
+-- Existing BillGuard databases: DO NOT re-import. Apply migrations/2026-11-08_simple_registration.sql once.
 CREATE DATABASE IF NOT EXISTS billguard_dev
   CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE billguard_dev;
 
 CREATE TABLE IF NOT EXISTS users (
-    id_number CHAR(9) NOT NULL PRIMARY KEY, -- yyyy-xxxx; class rule xxxx-xxxx
+    id_number CHAR(9) NOT NULL PRIMARY KEY, -- auto-generated internal ID, xxxx-xxxx
     first_name VARCHAR(30) NOT NULL,
     middle_name VARCHAR(30) NULL,
     family_name VARCHAR(30) NOT NULL,
     name_extension VARCHAR(10) NULL,
-    birthdate DATE NOT NULL,
-    street VARCHAR(50) NOT NULL,
-    barangay VARCHAR(50) NOT NULL,
-    city VARCHAR(50) NOT NULL,
-    province VARCHAR(50) NOT NULL,
-    country VARCHAR(50) NOT NULL,
-    zip_code CHAR(4) NOT NULL,
+    birthdate DATE NULL,
+    home_address VARCHAR(180) NULL,
+    street VARCHAR(50) NULL,
+    barangay VARCHAR(50) NULL,
+    city VARCHAR(50) NULL,
+    province VARCHAR(50) NULL,
+    country VARCHAR(50) NULL,
+    zip_code CHAR(4) NULL,
     email VARCHAR(100) NOT NULL,
     username VARCHAR(32) NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
@@ -25,13 +27,13 @@ CREATE TABLE IF NOT EXISTS users (
     account_status ENUM('pending','active','disabled') NOT NULL DEFAULT 'pending',
     email_verified_at DATETIME NULL,
     consented_at DATETIME NOT NULL,
-    -- Proposed BillGuard system-specific fields: subject to Appendix A approval.
-    utility_account_ciphertext VARBINARY(512) NOT NULL,
-    utility_account_iv VARBINARY(16) NOT NULL,
-    utility_account_tag VARBINARY(16) NOT NULL,
-    primary_utility_type ENUM('Electricity','Water','Internet') NOT NULL,
-    service_start_date DATE NOT NULL,
-    monthly_utility_budget DECIMAL(12,2) NOT NULL,
+    -- Retained for future utility management, not collected during simplified signup.
+    utility_account_ciphertext VARBINARY(512) NULL,
+    utility_account_iv VARBINARY(16) NULL,
+    utility_account_tag VARBINARY(16) NULL,
+    primary_utility_type ENUM('Electricity','Water','Internet') NULL,
+    service_start_date DATE NULL,
+    monthly_utility_budget DECIMAL(12,2) NULL,
     consecutive_failures INT UNSIGNED NOT NULL DEFAULT 0,
     lockout_until DATETIME NULL,
     last_alerted_tier TINYINT UNSIGNED NOT NULL DEFAULT 0,
