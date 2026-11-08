@@ -1,4 +1,4 @@
-# Phase 2 — Design Decisions (Required “Your call” Notes)
+> **SCOPE UPDATE (Nov 8):** This document describes the initial fully specified Phase 2 form. The project owner changed registration to First Name, Last Name, a single Home Address, Email and account credentials, with recovery questions folded and an inline privacy checkbox. CAPTCHA now belongs to Login. Four utility-specific fields and ID/birthdate were removed from signup. The implementation therefore **does not meet all original Section 4/7 course requirements**; [see migration and approval notes](SIMPLE_REGISTER_MIGRATION.md). Some design decisions below describe the superseded design and must be revisited before final submission.\n\n# Phase 2 — Design Decisions (Required “Your call” Notes)
 
 ## Why PHP rather than a JavaScript-only form?
 
