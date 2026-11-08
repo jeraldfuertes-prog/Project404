@@ -176,15 +176,32 @@ bg_page_start('Register', 'register');
         <input type="text" id="company_site" name="company_site" autocomplete="off" tabindex="-1">
     </div>
 
+    <ol class="wizard-progress" aria-label="Registration progress">
+        <li class="wizard-progress__item" data-progress="1"><span>01</span> Your information</li>
+        <li class="wizard-progress__item" data-progress="2"><span>02</span> Address & utility</li>
+        <li class="wizard-progress__item" data-progress="3"><span>03</span> Account security</li>
+    </ol>
+    <div class="wizard-panel" data-step="1">
     <div class="form-section">
-        <div class="form-section__heading"><span>01 / Identity</span><h2>PERSONAL DETAILS</h2></div>
+        <div class="form-section__heading"><span>01 / Identity</span><h2>FULL NAME, BIRTHDAY & EMAIL</h2></div>
         <div class="form-grid form-grid--2">
             <div class="form-field">
-                <label class="form-label" for="id_number">ID Number <span class="form-required" aria-hidden="true">*</span></label>
-                <input class="form-control" id="id_number" name="id_number" type="text" inputmode="numeric"
-                       placeholder="xxxx-xxxx" maxlength="9" pattern="[0-9]{4}-[0-9]{4}"
-                       value="<?= $value('id_number') ?>" required aria-describedby="error-id_number">
-                <?= $error('id_number') ?>
+                <label class="form-label" for="first_name">First Name <span class="form-required" aria-hidden="true">*</span></label>
+                <input class="form-control" id="first_name" name="first_name" type="text" required
+                       maxlength="<?= $seed['name_max'] ?? 29 ?>" value="<?= $value('first_name') ?>" aria-describedby="error-first_name">
+                <?= $error('first_name') ?>
+            </div>
+            <div class="form-field">
+                <label class="form-label" for="family_name">Family Name <span class="form-required" aria-hidden="true">*</span></label>
+                <input class="form-control" id="family_name" name="family_name" type="text" required
+                       maxlength="<?= $seed['name_max'] ?? 29 ?>" value="<?= $value('family_name') ?>" aria-describedby="error-family_name">
+                <?= $error('family_name') ?>
+            </div>
+            <div class="form-field">
+                <label class="form-label" for="middle_name">Middle Name <span class="form-optional">optional</span></label>
+                <input class="form-control" id="middle_name" name="middle_name" type="text"
+                       maxlength="<?= $seed['name_max'] ?? 29 ?>" value="<?= $value('middle_name') ?>" aria-describedby="error-middle_name">
+                <?= $error('middle_name') ?>
             </div>
             <div class="form-field">
                 <label class="form-label" for="birthdate">Birthdate <span class="form-required" aria-hidden="true">*</span></label>
@@ -194,22 +211,17 @@ bg_page_start('Register', 'register');
                 <?= $error('birthdate') ?>
             </div>
             <div class="form-field">
-                <label class="form-label" for="first_name">First Name <span class="form-required" aria-hidden="true">*</span></label>
-                <input class="form-control" id="first_name" name="first_name" type="text" required
-                       maxlength="<?= $seed['name_max'] ?? 29 ?>" value="<?= $value('first_name') ?>" aria-describedby="error-first_name">
-                <?= $error('first_name') ?>
+                <label class="form-label" for="email">Email Address <span class="form-required" aria-hidden="true">*</span></label>
+                <input class="form-control" id="email" name="email" type="email" autocomplete="email" maxlength="100"
+                       required value="<?= $value('email') ?>" aria-describedby="error-email">
+                <?= $error('email') ?>
             </div>
             <div class="form-field">
-                <label class="form-label" for="middle_name">Middle Name <span class="form-optional">optional</span></label>
-                <input class="form-control" id="middle_name" name="middle_name" type="text"
-                       maxlength="<?= $seed['name_max'] ?? 29 ?>" value="<?= $value('middle_name') ?>" aria-describedby="error-middle_name">
-                <?= $error('middle_name') ?>
-            </div>
-            <div class="form-field">
-                <label class="form-label" for="family_name">Family Name <span class="form-required" aria-hidden="true">*</span></label>
-                <input class="form-control" id="family_name" name="family_name" type="text" required
-                       maxlength="<?= $seed['name_max'] ?? 29 ?>" value="<?= $value('family_name') ?>" aria-describedby="error-family_name">
-                <?= $error('family_name') ?>
+                <label class="form-label" for="id_number">ID Number <span class="form-required" aria-hidden="true">*</span></label>
+                <input class="form-control" id="id_number" name="id_number" type="text" inputmode="numeric"
+                       placeholder="xxxx-xxxx" maxlength="9" pattern="[0-9]{4}-[0-9]{4}"
+                       value="<?= $value('id_number') ?>" required aria-describedby="error-id_number">
+                <?= $error('id_number') ?>
             </div>
             <div class="form-field">
                 <label class="form-label" for="age">Age <span class="form-optional">calculated</span></label>
@@ -235,6 +247,8 @@ bg_page_start('Register', 'register');
         </div>
     </div>
 
+    </div>
+    <div class="wizard-panel" data-step="2">
     <div class="form-section">
         <div class="form-section__heading"><span>02 / Location</span><h2>HOME ADDRESS</h2></div>
         <div class="form-grid form-grid--2">
@@ -289,15 +303,11 @@ bg_page_start('Register', 'register');
         </div>
     </div>
 
+    </div>
+    <div class="wizard-panel" data-step="3">
     <div class="form-section">
         <div class="form-section__heading"><span>04 / Credentials</span><h2>ACCOUNT ACCESS</h2></div>
         <div class="form-grid form-grid--2">
-            <div class="form-field">
-                <label class="form-label" for="email">Email Address <span class="form-required" aria-hidden="true">*</span></label>
-                <input class="form-control" id="email" name="email" type="email" autocomplete="email" maxlength="100"
-                       required value="<?= $value('email') ?>" aria-describedby="error-email">
-                <?= $error('email') ?>
-            </div>
             <div class="form-field">
                 <label class="form-label" for="username">Username <span class="form-required" aria-hidden="true">*</span></label>
                 <input class="form-control" id="username" name="username" type="text" autocomplete="username"
@@ -369,6 +379,11 @@ bg_page_start('Register', 'register');
         </button>
         <p class="preview-note">Your account stays <strong>unverified</strong> until the email OTP is accepted.
             Already registered? <a href="login.php">View Log-in</a>.</p>
+    </div>
+    </div>
+    <div class="wizard-controls" id="wizard-controls" hidden>
+        <button type="button" id="wizard-back" class="button button--ghost">Back</button>
+        <button type="button" id="wizard-next" class="button">Continue <span aria-hidden="true">→</span></button>
     </div>
 </form>
 <aside class="registration-aside">
