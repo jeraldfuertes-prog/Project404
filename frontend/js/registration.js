@@ -198,6 +198,59 @@
     }, 400);
   });
 
+  // Progressive enhancement: without JS all sections remain visible and submit normally.
+  const panels = [...form.querySelectorAll('.wizard-panel')];
+  const progress = [...form.querySelectorAll('[data-progress]')];
+  const controls = document.querySelector('#wizard-controls');
+  const previous = document.querySelector('#wizard-back');
+  const next = document.querySelector('#wizard-next');
+  let currentStep = 0;
+
+  const showStep = (step) => {
+    currentStep = Math.max(0, Math.min(panels.length - 1, step));
+    panels.forEach((panel, index) => {
+      panel.hidden = index !== currentStep;
+    });
+    progress.forEach((item, index) => {
+      item.classList.toggle('wizard-progress__item--current', index === currentStep);
+      item.classList.toggle('wizard-progress__item--done', index < currentStep);
+      if (index === currentStep) item.setAttribute('aria-current', 'step');
+      else item.removeAttribute('aria-current');
+    });
+    if (controls) controls.hidden = false;
+    if (previous) previous.hidden = currentStep === 0;
+    if (next) next.hidden = currentStep === panels.length - 1;
+    form.scrollIntoView({ behavior: 'auto', block: 'start' });
+  };
+
+  const validatePanel = (panel) => {
+    updateAge();
+    let firstInvalid = null;
+    for (const name of fields) {
+      const field = el(name);
+      if (!field || !panel.contains(field)) continue;
+      const message = validate(name);
+      error(name, message);
+      if (message && !firstInvalid) firstInvalid = field;
+    }
+    if (firstInvalid) {
+      firstInvalid.focus();
+      return false;
+    }
+    return true;
+  };
+
+  next?.addEventListener('click', () => {
+    if (validatePanel(panels[currentStep])) showStep(currentStep + 1);
+  });
+  previous?.addEventListener('click', () => showStep(currentStep - 1));
+
+  // On a server-side validation error return to the section containing the error.
+  const firstServerError = form.querySelector('.wizard-panel .form-error:not(:empty)');
+  const errorStep = firstServerError?.closest('.wizard-panel');
+  const firstErrorIndex = errorStep ? panels.indexOf(errorStep) : 0;
+  if (panels.length === 3) showStep(firstErrorIndex);
+
   form.addEventListener('submit', (event) => {
     updateAge();
     let firstInvalid = null;
@@ -208,8 +261,11 @@
     }
     if (firstInvalid) {
       event.preventDefault();
+      const panel = firstInvalid.closest('.wizard-panel');
+      const index = panels.indexOf(panel);
+      if (index >= 0) showStep(index);
       firstInvalid.focus();
-      firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      firstInvalid.scrollIntoView({ behavior: 'auto', block: 'center' });
     }
   });
 })();
