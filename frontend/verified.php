@@ -11,7 +11,7 @@ bg_page_start('Account Verified', 'verified');
     <p class="eyebrow">Account verification / outcome</p>
     <?php if ($confirmed): ?>
         <h1>ACCOUNT VERIFIED.</h1>
-        <p>Your BillGuard registration email was confirmed. Your account is now active and ready for the secure login feature in Phase 3.</p>
+        <p>Your BillGuard registration email was confirmed. Your account is now active. Sign in using your username, password, and email security code to open your dashboard.</p>
         <div class="notice notice--cyan" role="status"><strong>SUCCESS:</strong> Your registration OTP was accepted and cannot be reused. Verification does not log you in.</div>
     <?php else: ?>
         <h1>VERIFICATION REQUIRED.</h1>
@@ -19,7 +19,7 @@ bg_page_start('Account Verified', 'verified');
     <?php endif; ?>
     <div class="hero__actions">
         <a class="button" href="index.php">Return home</a>
-        <a class="button button--ghost" href="login.php">View login page</a>
+        <a class="button button--ghost" href="login.php">Continue to Login</a>
     </div>
 </section>
 <?php bg_page_end(); ?>
