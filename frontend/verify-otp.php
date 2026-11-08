@@ -11,8 +11,8 @@ if (!is_string($userId) || !preg_match('/^\d{4}-\d{4}$/D', $userId)) {
 }
 
 $message = (string) ($_SESSION['registration_message'] ?? '');
-unset($_SESSION['registration_message']);
-$error = '';
+$error = (string) ($_SESSION['registration_send_error'] ?? '');
+unset($_SESSION['registration_message'], $_SESSION['registration_send_error']);
 $wait = 0;
 $seed = null;
 $emailHint = '';
@@ -66,6 +66,10 @@ try {
     $timestamp = $latest->fetchColumn();
     if ($timestamp) {
         $wait = max($wait, max(0, 60 - (bg_now()->getTimestamp() - strtotime((string) $timestamp))));
+    } elseif ($error === '' && $message === '') {
+        // The original delivery attempt may have rolled back completely.
+        // The user can retry from this page without registering again.
+        $error = 'No verification code has been sent yet. Check your email settings, then select Resend OTP.';
     }
 } catch (Throwable $e) {
     error_log('BillGuard: verification page setup failed.');
