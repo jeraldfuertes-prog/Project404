@@ -1,8 +1,10 @@
 <?php
 /**
- * SAMPLE ONLY. Copy to backend/config.php and enter LOCAL private values.
- * backend/config.php and vendor/ are excluded from Git.
- * Do NOT use these example values in a deployed application.
+ * SAMPLE SETTINGS ONLY. No real credentials or personal student number here!
+ *
+ * Copy to backend/config.php (excluded from Git) and complete the local values.
+ * Existing users: add the NEW seed/privacy/encryption keys to your current
+ * backend/config.php instead of overwriting working DB and SMTP credentials.
  */
 return [
     'db_host' => '127.0.0.1',
@@ -19,6 +21,17 @@ return [
     'smtp_from_name' => 'BillGuard',
     'smtp_test_recipient' => 'REPLACE_WITH_YOUR_TEST_INBOX',
 
-    // Will be generated securely before encryption work begins.
-    'encryption_key' => 'REPLACE_WITH_PRIVATE_32_BYTE_KEY',
+    // Section 2.2: only the LAST TWO DIGITS of the student number, kept PRIVATE.
+    // Replace each null with a digit (integer 0..9), based on approved seed table.
+    'seed_d1' => null, // second-to-last digit
+    'seed_d2' => null, // last digit
+
+    // Use a fresh 32-byte key; generate LOCALLY:
+    // php -r "echo 'base64:'.base64_encode(random_bytes(32)).PHP_EOL;"
+    // Never store this key in Git, email, or screenshots. Back it up securely.
+    'encryption_key' => 'REPLACE_WITH_BASE64_32_BYTE_KEY',
+
+    // RA 10173: real data-protection contact and an HONEST, implemented retention policy.
+    'privacy_contact' => 'REPLACE_WITH_PRIVACY_CONTACT_EMAIL',
+    'privacy_retention' => 'REPLACE_WITH_RETENTION_AND_DELETION_POLICY',
 ];
