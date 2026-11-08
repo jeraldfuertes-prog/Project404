@@ -83,24 +83,9 @@ function bg_check_ip_threshold(PDO $db, string $ip, array $seed): bool
 
 function bg_mail_lockout_alert(string $to, int $tier, int $failures, string $ip, string $agent, array $config): bool
 {
-    $autoload = dirname(__DIR__) . '/vendor/autoload.php';
-    if (!is_file($autoload)) return false;
-    require_once $autoload;
     try {
-        $mail = new PHPMailer\PHPMailer\PHPMailer(true);
-        $mail->isSMTP();
-        $mail->Host = (string) $config['smtp_host'];
-        $mail->Port = (int) ($config['smtp_port'] ?? 587);
-        $mode = (string) ($config['smtp_security'] ?? 'tls');
-        $mail->SMTPAuth = $mode !== 'none';
-        $mail->Username = (string) $config['smtp_user'];
-        $mail->Password = (string) $config['smtp_password'];
-        $mail->SMTPSecure = $mode === 'ssl' ?
-            PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_SMTPS :
-            ($mode === 'tls' ? PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS : '');
-        if ($mode === 'none') $mail->SMTPAutoTLS = false;
-        $mail->CharSet = 'UTF-8';
-        $mail->setFrom((string) $config['smtp_from'], (string) ($config['smtp_from_name'] ?? 'BillGuard'));
+        // Match registration OTP/login OTP and CLI SMTP tests exactly.
+        $mail = bg_configured_mailer($config);
         $mail->addAddress($to);
         $mail->Subject = "BillGuard - Security alert (Tier {$tier})";
         $mail->Body = "An account protection lockout was triggered.\n"
