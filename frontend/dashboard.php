@@ -1,126 +1,136 @@
 <?php
 declare(strict_types=1);
-require_once dirname(__DIR__) . '/backend/php/auth.php';
-require_once dirname(__DIR__) . '/backend/php/layout.php';
-bg_secure_start();
+require_once dirname(__DIR__) . '/backend/php/billing.php';
+require_once dirname(__DIR__) . '/backend/php/app_layout.php';
 
 try {
-    $config = billguard_config();
-    $seed = bg_seed($config);
-    if ($seed === null) throw new RuntimeException('Seed missing');
-    $db = billguard_db();
-    $user = bg_auth_user($db, $seed);
-    if ($user === null) {
-        header('Location: login.php', true, 303);
-        exit;
-    }
-
+    [$db, $user] = bg_app_context();
+    $ready = bg_bill_schema_ready($db);
     $today = bg_now()->format('Y-m-d');
     $month = bg_now()->format('Y-m-01');
     $nextMonth = bg_now()->modify('first day of next month')->format('Y-m-d');
-
-    // All household queries must bind the authenticated user's ID.
-    $summary = $db->prepare('SELECT COUNT(*) AS bill_count,
-        COALESCE(SUM(amount), 0) AS bill_total,
-        COALESCE(SUM(CASE WHEN status = :unpaid THEN amount ELSE 0 END), 0) AS unpaid_total
-        FROM utility_bills WHERE user_id = :user_id AND billing_month >= :month
-            AND billing_month < :next_month');
-    $summary->execute([
-        ':unpaid' => 'unpaid',
-        ':user_id' => $user['id_number'],
-        ':month' => $month,
-        ':next_month' => $nextMonth,
-    ]);
-    $totals = $summary->fetch();
-
-    $payment = $db->prepare('SELECT COALESCE(SUM(p.amount),0)
-        FROM utility_payments p INNER JOIN utility_bills b ON p.bill_id = b.id
-        WHERE b.user_id = :user_id AND p.paid_on >= :month AND p.paid_on < :next_month');
-    $payment->execute([
-        ':user_id' => $user['id_number'],
-        ':month' => $month,
-        ':next_month' => $nextMonth,
-    ]);
-    $paid = (float) $payment->fetchColumn();
-
-    $upcoming = $db->prepare('SELECT utility_type, description, due_date, amount, status
-        FROM utility_bills WHERE user_id = :user_id
-        ORDER BY due_date ASC, id DESC LIMIT 8');
-    $upcoming->execute([':user_id' => $user['id_number']]);
-    $bills = $upcoming->fetchAll();
-
+    $bills = $ready ? bg_user_bills($db, $user['id_number']) : [];
+    $billedMonth = 0;
+    $countMonth = 0;
+    $outstanding = 0;
+    $dueSoon = 0;
+    $overdue = 0;
+    $pendingBills = [];
+    foreach ($bills as $bill) {
+        if ($bill['billing_month'] >= $month && $bill['billing_month'] < $nextMonth) {
+            $billedMonth += $bill['amount_cents'];
+            $countMonth++;
+        }
+        $outstanding += $bill['balance_cents'];
+        $dueLabel = bg_bill_due_label($bill['due_date'], $bill['balance_cents'], $today);
+        if ($dueLabel === 'Overdue') $overdue++;
+        if (in_array($dueLabel, ['Due Today', 'Due Soon'], true)) $dueSoon++;
+        if ($bill['balance_cents'] > 0) {
+            $bill['due_label'] = $dueLabel;
+            $pendingBills[] = $bill;
+        }
+    }
+    $pendingBills = array_slice($pendingBills, 0, 8);
+    $paidThisMonth = 0;
+    if ($ready) {
+        $payment = $db->prepare('SELECT COALESCE(SUM(p.amount), 0)
+            FROM utility_payments p INNER JOIN utility_bills b ON b.id = p.bill_id
+            WHERE b.user_id = :uid AND p.paid_on >= :month AND p.paid_on < :next');
+        $payment->execute([':uid' => $user['id_number'], ':month' => $month, ':next' => $nextMonth]);
+        $paidThisMonth = bg_bill_cents((string) $payment->fetchColumn(), true) ?? 0;
+    }
 } catch (Throwable $e) {
-    error_log('BillGuard: dashboard query failed.');
+    error_log('BillGuard: dashboard setup failed.');
     http_response_code(503);
-    exit('The dashboard is temporarily unavailable. Please try again later.');
+    exit('The dashboard is temporarily unavailable. Check the private configuration and database.');
 }
-$money = static fn(float $amount): string => '₱' . number_format($amount, 2);
-$name = (string) $user['first_name'];
-bg_page_start('Dashboard', 'dashboard');
+
+bg_app_start('Dashboard', 'dashboard', $user);
 ?>
-<section class="dashboard-intro">
+<header class="app-page__header">
     <div>
-        <p class="eyebrow">Your household overview</p>
-        <h1>WELCOME, <?= bg_safe($name) ?>.</h1>
-        <p>View your household utility bills and payments in one place.</p>
+        <p class="eyebrow">Your household overview / <?= bg_safe(bg_now()->format('F Y')) ?></p>
+        <h1>WELCOME, <?= bg_safe((string) $user['first_name']) ?>.</h1>
+        <p>Monitor bills, record payments, and stay ahead of due dates.</p>
     </div>
-    <div class="dashboard-status"><span class="status-dot" aria-hidden="true"></span> VERIFIED SESSION</div>
-</section>
+    <div class="app-quick-links"><a class="button button--small" href="bills.php#bill-form">+ Add Bill</a></div>
+</header>
+<?php if (!$ready): ?>
+    <div class="notice notice--error" role="alert">
+        <strong>One-time database update needed:</strong>
+        Import <code>backend/database/migrations/2026-11-08_add_other_utility.sql</code>
+        into your existing <code>billguard_dev</code> database using phpMyAdmin. Back up the database first.
+        Do not re-import the entire schema.
+    </div>
+<?php endif; ?>
 <section aria-labelledby="overview-title">
-    <h2 id="overview-title" class="dashboard-section-title">THIS MONTH'S SUMMARY</h2>
-    <div class="dashboard-stats">
-        <article class="card dashboard-stat">
-            <span class="dashboard-stat__label">Total utility bills</span>
-            <strong><?= bg_safe($money((float) ($totals['bill_total'] ?? 0))) ?></strong>
-            <small><?= (int) ($totals['bill_count'] ?? 0) ?> bills this month</small>
+    <h2 id="overview-title" class="dashboard-section-title">HOUSEHOLD SUMMARY</h2>
+    <div class="app-stat-grid">
+        <article class="app-stat">
+            <span class="app-stat__label">Billed This Month</span>
+            <strong class="app-stat__value"><?= bg_safe(bg_bill_peso($billedMonth)) ?></strong>
+            <small class="app-stat__detail"><?= $countMonth ?> bills in this billing month</small>
         </article>
-        <article class="card dashboard-stat">
-            <span class="dashboard-stat__label">Unpaid bill value</span>
-            <strong><?= bg_safe($money((float) ($totals['unpaid_total'] ?? 0))) ?></strong>
-            <small>Unpaid bills for this billing month</small>
+        <article class="app-stat">
+            <span class="app-stat__label">Remaining Balance</span>
+            <strong class="app-stat__value"><?= bg_safe(bg_bill_peso($outstanding)) ?></strong>
+            <small class="app-stat__detail">Across all your unpaid and partial bills</small>
         </article>
-        <article class="card dashboard-stat">
-            <span class="dashboard-stat__label">Payments made</span>
-            <strong><?= bg_safe($money($paid)) ?></strong>
-            <small>Payments recorded this month</small>
+        <article class="app-stat">
+            <span class="app-stat__label">Payments This Month</span>
+            <strong class="app-stat__value"><?= bg_safe(bg_bill_peso($paidThisMonth)) ?></strong>
+            <small class="app-stat__detail">Payments recorded this calendar month</small>
+        </article>
+        <article class="app-stat">
+            <span class="app-stat__label">Due Within 7 Days</span>
+            <strong class="app-stat__value"><?= $dueSoon ?> <?= $dueSoon === 1 ? 'bill' : 'bills' ?></strong>
+            <small class="app-stat__detail"><?= $overdue ?> already overdue</small>
         </article>
     </div>
 </section>
-<section class="dashboard-panel" aria-labelledby="bill-list-title">
-    <div class="dashboard-panel__heading">
+<section class="app-panel app-panel--table" aria-labelledby="upcoming-title">
+    <div class="app-panel__top">
         <div>
-            <p class="eyebrow">Personal account / <?= bg_safe(bg_now()->format('F Y')) ?></p>
-            <h2 id="bill-list-title">YOUR UTILITY BILLS</h2>
+            <h2 id="upcoming-title">UPCOMING &amp; OVERDUE BILLS</h2>
+            <p>Only your outstanding bills; nearest due date first.</p>
         </div>
-        <span class="dashboard-state-label">PRIVATE ACCOUNT VIEW</span>
+        <a href="reminders.php">View Reminders</a>
     </div>
-    <?php if (empty($bills)): ?>
-        <div class="dashboard-empty">
-            <span class="dashboard-empty__symbol" aria-hidden="true">▣</span>
-            <h3>No bills recorded yet</h3>
-            <p>Your account is ready. Adding and editing household bills will be available when the Bill Management module is built.</p>
+    <?php if (!$pendingBills): ?>
+        <div class="app-empty">
+            <strong>No outstanding bills to show.</strong>
+            <?= $ready ? 'Add your first utility bill, or enjoy your cleared balances.' : 'Import the database migration to load bills.' ?>
         </div>
     <?php else: ?>
         <div class="dashboard-table-wrap">
             <table class="dashboard-table">
-                <thead><tr><th>Utility</th><th>Description</th><th>Due date</th><th>Amount</th><th>Status</th></tr></thead>
+                <thead><tr><th>Utility</th><th>Description</th><th>Due date</th><th>Remaining</th><th>Reminder</th><th></th></tr></thead>
                 <tbody>
-                    <?php foreach ($bills as $bill): ?>
+                <?php foreach ($pendingBills as $bill): ?>
                     <tr>
-                        <td><?= bg_safe($bill['utility_type']) ?></td>
+                        <td><?= bg_safe($bill['utility_label']) ?></td>
                         <td><?= bg_safe($bill['description']) ?></td>
                         <td><?= bg_safe($bill['due_date']) ?></td>
-                        <td><?= bg_safe($money((float) $bill['amount'])) ?></td>
-                        <td><span class="dashboard-state"><?= bg_safe(ucfirst($bill['status'])) ?></span></td>
+                        <td><?= bg_safe(bg_bill_peso($bill['balance_cents'])) ?></td>
+                        <td><span class="app-badge <?= $bill['due_label'] === 'Overdue' ? 'app-badge--overdue' : 'app-badge--soon' ?>"><?= bg_safe($bill['due_label']) ?></span></td>
+                        <td><a href="payments.php?bill_id=<?= (int) $bill['id'] ?>">Record Payment</a></td>
                     </tr>
-                    <?php endforeach; ?>
+                <?php endforeach; ?>
                 </tbody>
             </table>
         </div>
     <?php endif; ?>
 </section>
-<section class="notice notice--cyan" aria-label="Development notice">
-    <strong>BillGuard development:</strong> This is a real, session-protected household dashboard using your database.
-    Adding, editing and paying bills will be completed in the Bill Management phase.
-</section>
-<?php bg_page_end(); ?>
+<div class="app-panel">
+    <div class="app-panel__top">
+        <h2>QUICK ACTIONS</h2>
+    </div>
+    <p class="app-mini-note">Payments are manual records only; BillGuard does not transfer money to utility providers.</p>
+    <div class="app-quick-links">
+        <a class="button button--small" href="bills.php#bill-form">+ Add Utility Bill</a>
+        <a class="button button--ghost button--small" href="payments.php">Record Payment</a>
+        <a class="button button--ghost button--small" href="reminders.php">Due-Date Reminders</a>
+        <a class="button button--ghost button--small" href="profile.php">Account Profile</a>
+    </div>
+</div>
+<?php bg_app_end(); ?>
