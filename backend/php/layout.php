@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+require_once __DIR__ . '/security.php';
 
 /**
  * BillGuard shared public layout.
@@ -13,15 +14,18 @@ function bg_escape(string $value): string
 
 function bg_page_start(string $title, string $page = 'home'): void
 {
+    bg_secure_start();
     header('X-Frame-Options: DENY');
     header('X-Content-Type-Options: nosniff');
     header('Referrer-Policy: strict-origin-when-cross-origin');
 
-    // Phase 1 has no authentication; only public navigation is active.
-    // The protected navigation is introduced with server-verified sessions in Phase 3.
-    if ($page === 'login') {
+    // After login OTP, show Home and Logout. For guests, use handout navigation.
+    $loggedIn = isset($_SESSION['user_id']) && is_string($_SESSION['user_id']);
+    if ($loggedIn) {
+        $navigation = ['home' => ['Home', 'index.php'], 'dashboard' => ['Dashboard', 'dashboard.php']];
+    } elseif ($page === 'login' || $page === 'login-otp') {
         $navigation = ['home' => ['Home', 'index.php'], 'register' => ['Register', 'register.php']];
-    } elseif ($page === 'register') {
+    } elseif ($page === 'register' || $page === 'verify-otp') {
         $navigation = ['home' => ['Home', 'index.php'], 'login' => ['Log-in', 'login.php']];
     } else {
         $navigation = [
@@ -48,7 +52,7 @@ function bg_page_start(string $title, string $page = 'home'): void
 <div class="site-wrap">
     <div class="site-prospect" aria-label="System name">
         <span>BillGuard // Secure Household Utility Bill Monitoring System</span>
-        <span class="site-prospect__status">IT 107 • Interface preview</span>
+        <span class="site-prospect__status">IT 107 • Secure household utilities</span>
     </div>
     <header class="site-header">
         <a class="brand" href="index.php" aria-label="BillGuard home">
@@ -64,6 +68,12 @@ function bg_page_start(string $title, string $page = 'home'): void
                    class="<?= $key === 'register' ? 'site-nav__highlight' : '' ?>"
                    <?= $page === $key ? 'aria-current="page"' : '' ?>><?= bg_escape($label) ?></a>
             <?php endforeach; ?>
+            <?php if ($loggedIn): ?>
+                <form action="logout.php" method="post" class="nav-logout">
+                    <?= bg_csrf_field() ?>
+                    <button type="submit" class="site-nav__logout">Logout</button>
+                </form>
+            <?php endif; ?>
         </nav>
     </header>
     <main id="main-content" class="main-content">
