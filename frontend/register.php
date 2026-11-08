@@ -87,7 +87,14 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                 session_regenerate_id(true);
                 $_SESSION['registration_pending_id'] = $accountId;
                 $result = bg_send_otp($db, $accountId, $values['email'], 'register', $config, $seed, false);
-                $_SESSION['registration_message'] = $result['message'];
+                if ($result['ok']) {
+                    $_SESSION['registration_message'] = $result['message'];
+                    unset($_SESSION['registration_send_error']);
+                } else {
+                    // Registration stays pending. Do not falsely claim delivery.
+                    $_SESSION['registration_send_error'] = $result['message'];
+                    unset($_SESSION['registration_message']);
+                }
                 header('Location: verify-otp.php', true, 303);
                 exit;
             }
