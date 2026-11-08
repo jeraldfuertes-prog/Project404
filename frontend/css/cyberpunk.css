@@ -466,3 +466,54 @@ strong { color: var(--cp-text); }
   .wizard-progress__item { padding: 9px 7px; font-size: .62rem; }
   .wizard-controls button { flex: 1; }
 }
+
+
+/* Simplified single-screen registration */
+.simple-auth--register {
+  max-width: 720px;
+  padding-top: 40px;
+}
+.simple-auth--register .simple-auth__card {
+  border-color: rgba(0,255,0,.34);
+}
+.simple-auth--register .simple-auth__intro {
+  margin-bottom: 24px;
+}
+.simple-register__heading {
+  font-size: .96rem;
+  color: var(--cp-cyan);
+  text-shadow: none;
+  letter-spacing: .08em;
+  margin: 18px 0 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--cp-border-muted);
+}
+.simple-register__heading:first-of-type { margin-top: 0; }
+.recovery-details {
+  margin: 22px 0 16px;
+  background: rgba(0,255,255,.035);
+  border: 1px solid var(--cp-border-muted);
+  border-radius: 7px;
+  padding: 16px;
+}
+.recovery-details summary {
+  cursor: pointer;
+  font-size: .83rem;
+  font-weight: 700;
+  color: var(--cp-cyan);
+}
+.recovery-details summary:focus-visible {
+  outline: 3px solid var(--cp-cyan);
+  outline-offset: 4px;
+}
+.recovery-details .form-field:last-child { margin-bottom: 0; }
+.recovery-details > .form-hint { margin-top: 14px; }
+.simple-register__consent {
+  font-size: .78rem;
+  margin: 22px 0 12px;
+}
+.simple-register__footnote { margin: 16px 0 0; text-align: center; }
+@media (max-width: 620px) {
+  .simple-auth--register { padding-top: 20px; }
+  .simple-auth--register .form-grid--2 { grid-template-columns: 1fr; }
+}
