@@ -1,26 +1,26 @@
 # BillGuard – Development Phase Structure
 
-This roadmap follows the IT 107 **Security1 Student Handout**. Do not implement registration until the instructor signs and approves the Appendix A System Proposal. Any proposed fields and validation rules below remain tentative until approval.
+This roadmap follows the IT 107 **Security1 Student Handout**. **Status (November 8, 2026): Phase 0 and Phase 1 complete according to the project owner; Phase 2 is next.** Before implementing the registration form, use the instructor-approved Appendix A fields and student's personal seed values rather than placeholder defaults.
 
-## Phase 0 — Proposal and personal seed (Week 1)
+## Phase 0 — Proposal and personal seed (Week 1) — COMPLETED (owner-confirmed)
 
-**Goal:** Prove the project qualifies and obtain permission to code the registration form.
+**Goal (completed per owner's update):** Prove the project qualifies and obtain permission to code the registration form.
 
-- [ ] Confirm that no classmate has already reserved the proposed system title.
-- [ ] Fill out Appendix A: system name, users, stored information, reason accounts need protection, sensitive data field, and four system-specific fields.
-- [ ] Proposed unique registration fields (subject to approval):
+- [x] Confirm that no classmate has already reserved the proposed system title.
+- [x] Fill out Appendix A: system name, users, stored information, reason accounts need protection, sensitive data field, and four system-specific fields.
+- [x] Proposed unique registration fields (subject to approval):
   1. Utility Account Number — formatted text; 8–12 digits; required; encrypt at rest.
   2. Primary Utility Type — dropdown: Electricity, Water, Internet; required.
   3. Service Start Date — date; required; cannot be in the future.
   4. Monthly Utility Budget — decimal amount in PHP; required; greater than 0.
-- [ ] Compute the Section 2.2 seed from the last two digits of **your own student number**, without including your full student number in public Git files.
-- [ ] Prepare the required table of seed-derived username/password limits, lockout times, OTP expiry, idle timeout, IP threshold, and three questions.
-- [ ] Submit Appendix A and obtain instructor signature/approval.
+- [x] Compute the Section 2.2 seed from the last two digits of **your own student number**, without including your full student number in public Git files.
+- [x] Prepare the required table of seed-derived username/password limits, lockout times, OTP expiry, idle timeout, IP threshold, and three questions.
+- [x] Submit Appendix A and obtain instructor signature/approval.
 
-**Deliverable:** Approved proposal + personal seed table.
+**Deliverable (reported complete):** Approved proposal + personal seed table.
 **Checkpoint 1:** Proposal approved, seed table filled, Git repository and `.gitignore` created, and one test email sent.
 
-## Phase 1 — Repository and development environment (Week 1)
+## Phase 1 — Repository and development environment (Week 1) — COMPLETED
 
 **Repository preparation:** database schema, PDO helper, PHP preflight, PHPMailer dependency and SMTP test script are committed. Follow [Phase 1 local setup](PHASE1_SETUP.md); keep the tests unchecked until the Windows installation and test inbox are actually verified.
 
