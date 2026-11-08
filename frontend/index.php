@@ -76,10 +76,6 @@ bg_page_start('Home', 'home');
     </div>
 </section>
 <section class="section" aria-label="Current development status">
-    <div class="notice">
-        <strong>PHASE 1 / DESIGN PREVIEW:</strong> This interface uses illustrative data only.
-        Registration, account access and bill storage are not yet enabled.
-        System approval and security implementation come next.
-    </div>
+  
 </section>
 <?php bg_page_end(); ?>
