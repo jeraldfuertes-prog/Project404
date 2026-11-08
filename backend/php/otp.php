@@ -68,9 +68,7 @@ function bg_send_otp(PDO $db, string $userId, string $email, string $purpose, ar
 
 function bg_verify_registration_otp(PDO $db, string $userId, string $submitted): array
 {
-    if (!preg_match('/^\d{6}$/D', $submitted)) {
-        return ['ok' => false, 'message' => 'Enter the six-digit code from your email.'];
-    }
+    $validFormat = preg_match('/^\\d{6}$/D', $submitted) === 1;
     try {
         $db->beginTransaction();
         $q = $db->prepare('SELECT id, otp_hash, expires_at, failed_attempts, consumed_at, cancelled_at
@@ -94,7 +92,7 @@ function bg_verify_registration_otp(PDO $db, string $userId, string $submitted):
             return ['ok' => false, 'message' => 'This code has expired or been cancelled. Request a new code.'];
         }
 
-        if (!password_verify($submitted, (string) $record['otp_hash'])) {
+        if (!$validFormat || !password_verify($submitted, (string) $record['otp_hash'])) {
             $failCount = (int) $record['failed_attempts'] + 1;
             $update = $db->prepare('UPDATE one_time_passwords SET failed_attempts = :attempts,
                 cancelled_at = :cancelled WHERE id = :id');
