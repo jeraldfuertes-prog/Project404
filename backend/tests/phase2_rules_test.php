@@ -32,7 +32,7 @@ check(bg_name_error('J', 'First Name', 27) !== null, 'Too-short name rejected');
 check(bg_name_error("Line\nBreak", 'First Name', 27) !== null, 'Control characters in names rejected');
 check(bg_home_address_error('Purok 3, San Isidro, Cabadbaran City') === null, 'Ordinary comma-separated address accepted');
 check(bg_home_address_error('Bl. #2-A / Rúa São João (Unit #4)') === null, 'Special characters and accents accepted in address');
-check(bg_home_address_error('Apt. 1\nLine 2') !== null, 'Control characters in address rejected');
+check(bg_home_address_error("Apt. 1\nLine 2") !== null, 'Control characters in address rejected');
 check(bg_home_address_error('A') !== null, 'Too-short address rejected');
 check(bg_address_error('Purok 3', 'Purok / Street', true) === null, 'Street with digit valid');
 check(bg_address_error('Purok@3', 'Purok / Street', true) !== null, 'Special character street rejected');
