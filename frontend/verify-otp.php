@@ -111,7 +111,7 @@ bg_page_start('Verify Email', 'verify-otp');
             <?= bg_csrf_field() ?>
             <input type="hidden" name="action" value="resend">
             <button class="button button--ghost button--full" type="submit" id="otp-resend"
-                data-wait="<?= $wait ?>" <?= $wait > 0 ? 'disabled' : '' ?>>Resend OTP</button>
+                data-wait="<?= $wait ?>">Resend OTP</button>
             <p class="form-hint" id="resend-timer" aria-live="polite">
                 <?= $wait > 0 ? 'Resend available in ' . $wait . ' seconds.' : 'You may resend now.' ?>
             </p>
