@@ -1,7 +1,7 @@
 -- BillGuard / IT 107: Development schema (no personal data or test accounts)
 -- Run this file in phpMyAdmin SQL/Import or the MySQL command-line client.
 -- MySQL 8.x; use a dedicated database account in the application.
--- Existing BillGuard databases: DO NOT re-import. Apply migrations/2026-11-08_simple_registration.sql once.
+-- Existing BillGuard databases: DO NOT re-import. Apply the relevant migrations once.
 CREATE DATABASE IF NOT EXISTS billguard_dev
   CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE billguard_dev;
@@ -120,7 +120,8 @@ CREATE TABLE IF NOT EXISTS security_flags (
 CREATE TABLE IF NOT EXISTS utility_bills (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     user_id CHAR(9) NOT NULL,
-    utility_type ENUM('Electricity','Water','Internet') NOT NULL,
+    utility_type ENUM('Electricity','Water','Internet','Other') NOT NULL,
+    custom_utility_name VARCHAR(80) NULL,
     description VARCHAR(120) NOT NULL,
     billing_month DATE NOT NULL,
     due_date DATE NOT NULL,
