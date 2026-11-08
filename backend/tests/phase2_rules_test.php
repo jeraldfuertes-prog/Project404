@@ -20,12 +20,20 @@ check($seed['password_min'] === 11 && $seed['name_max'] === 27, 'Password/name l
 check($seed['otp_expiry'] === 4, 'OTP expiry matches formula');
 check($seed['question_ids'] === [8, 3, 5], 'Question sequence matches formula');
 
-check(bg_name_error('Juan Carlo', 'First Name', 27) === null, 'Valid Title Case name accepted');
-check(bg_name_error('juan', 'First Name', 27) !== null, 'Lowercase name rejected');
-check(bg_name_error('JUAN', 'First Name', 27) !== null, 'All-caps name rejected');
-check(bg_name_error('Ju4n', 'First Name', 27) !== null, 'Digits in name rejected');
-check(bg_name_error('Juan  Carlo', 'First Name', 27) !== null, 'Double-space name rejected');
-check(bg_name_error('Juaaan', 'First Name', 27) !== null, 'Triple repeated name letters rejected');
+check(bg_name_error('Juan Carlo', 'First Name', 27) === null, 'Title Case name accepted');
+check(bg_name_error('juan', 'First Name', 27) === null, 'Lowercase name accepted');
+check(bg_name_error('FUERTES', 'Family Name', 27) === null, 'All-capitals name accepted');
+check(bg_name_error("O'Connor", 'Family Name', 27) === null, 'Apostrophe name accepted');
+check(bg_name_error('María-José', 'First Name', 27) === null, 'Accents and hyphen accepted');
+check(bg_name_error('Ju4n@', 'First Name', 27) === null, 'Printable special characters accepted');
+check(bg_name_error('Juan  Carlo', 'First Name', 27) === null, 'Double spaces permitted');
+check(bg_name_error('Juaaan', 'First Name', 27) === null, 'Repeated letters permitted');
+check(bg_name_error('J', 'First Name', 27) !== null, 'Too-short name rejected');
+check(bg_name_error("Line\nBreak", 'First Name', 27) !== null, 'Control characters in names rejected');
+check(bg_home_address_error('Purok 3, San Isidro, Cabadbaran City') === null, 'Ordinary comma-separated address accepted');
+check(bg_home_address_error('Bl. #2-A / Rúa São João (Unit #4)') === null, 'Special characters and accents accepted in address');
+check(bg_home_address_error('Apt. 1\nLine 2') !== null, 'Control characters in address rejected');
+check(bg_home_address_error('A') !== null, 'Too-short address rejected');
 check(bg_address_error('Purok 3', 'Purok / Street', true) === null, 'Street with digit valid');
 check(bg_address_error('Purok@3', 'Purok / Street', true) !== null, 'Special character street rejected');
 check(bg_address_error('San Isidro', 'Barangay', false) === null, 'Address Title Case valid');
