@@ -26,5 +26,7 @@ jobs:
         run: find frontend/js -type f -name '*.js' -print0 | xargs -0 -n1 node --check
       - name: Validate Phase 2 server-side rules
         run: php backend/tests/phase2_rules_test.php
+      - name: Validate Gmail mailer configuration and safe diagnostics
+        run: php backend/tests/mail_transport_test.php
       - name: Validate seeded login lockouts and security thresholds
         run: php backend/tests/auth_rules_test.php
