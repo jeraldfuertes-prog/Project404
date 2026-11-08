@@ -48,9 +48,9 @@ function bg_sign_out(): void
 function bg_login_lockout(int $failures, array $seed): array
 {
     $d1 = $seed['d1'];
-    if ($failures >= 9) return [3, 60 + 4 * $d1];
-    if ($failures >= 6) return [2, 30 + 2 * $d1];
-    if ($failures >= 3) return [1, 15 + $d1];
+    if ($failures === 9) return [3, 60 + 4 * $d1];
+    if ($failures === 6) return [2, 30 + 2 * $d1];
+    if ($failures === 3) return [1, 15 + $d1];
     return [0, 0];
 }
 
