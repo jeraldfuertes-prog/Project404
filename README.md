@@ -3,7 +3,7 @@
 
 IT 107 – Information Assurance and Security I · Final Laboratory Project
 
-> **Project status (November 8, 2026):** Phase 0 (proposal and personal seed) **complete, as reported by the project owner**. Phase 1 (environment setup and Cyberpunk UI) **complete**. Phase 2 (registration, CAPTCHA and verification OTP) **implemented in code, pending local end-to-end testing**. This repository is the official project repository.
+> **Project status (November 8, 2026):** Phase 0 (proposal and personal seed) **complete, as reported by the project owner**. Phase 1 (environment setup and Cyberpunk UI) **complete**. Phase 2 (registration, CAPTCHA and registration OTP) **implemented in code, pending local end-to-end testing**. The basic secure login and user dashboard are also implemented ahead of the remaining Phase 3 work. This repository is the official project repository.
 
 ## Purpose
 
@@ -46,7 +46,7 @@ Read **[docs/PHASES.md](docs/PHASES.md)** for the eight-phase roadmap, detailed 
 
 Project folders are separated: **`frontend/`** is the web root for pages and static assets, and **`backend/`** holds server-side PHP and future private services. Set Apache DocumentRoot or PHP's `-t` to `frontend/`, never to the repository root.
 
-A dark, neon cyberpunk design is used throughout. The **registration form, CAPTCHA and registration email OTP are now implemented (Phase 2)**, but they remain gated until you configure the approved seed, private AES key, privacy details and GD extension. **Login, household billing and admin monitoring remain previews/future phases.**
+A dark, neon cyberpunk design is used throughout. The **registration form, CAPTCHA and registration email OTP are now implemented (Phase 2)**, but they remain gated until you configure the approved seed, private AES key, privacy details and GD extension. **A secure login with email OTP and session-protected read-only dashboard now work in code; bill entry/payment, password recovery and admin monitoring remain future phases.**
 
 To preview on Windows after cloning the repository:
 
@@ -73,6 +73,14 @@ Follow **[Phase 1 Windows Setup & Verification](docs/PHASE1_SETUP.md)** for exac
 
 Security reminder: Never publish `backend/config.php`, SMTP App Passwords, or real household records. Keep `frontend/` as the only web-accessible root.
 
+## Simple registration and protected dashboard
+
+The registration screen is now a **three-step form** that begins with Full Name, Birthdate and Email. The remaining required fields appear in subsequent steps so the UX is easier to follow **without violating the IT 107 required-field rules**.
+
+The login screen now accepts username/password/CAPTCHA, emails a login OTP, and directs the verified user to the **session-protected dashboard**. Newly registered accounts have an empty billing dashboard until the bill management module is implemented.
+
+See **[Step-by-step testing and instructions](docs/SIMPLE_LOGIN_REGISTER.md)**. **This has not yet been verified in the owner's local browser.** The GitHub syntax and unit tests are separate checks.
+
 ## Phase 2 — secure registration in progress
 
 The current Phase 2 implementation adds:
@@ -86,5 +94,5 @@ The current Phase 2 implementation adds:
 
 **Local configuration required:** see [Phase 2 Setup](docs/PHASE2_SETUP.md), [Error Message Mapping](docs/PHASE2_ERROR_MAPPING.md) and [Design Decisions](docs/PHASE2_DESIGN_DECISIONS.md). Use the approved proposal and private student seed; NEVER commit credentials, AES key or a full student number.
 
-**Next step:** run `php backend/scripts/check_phase2.php`, run the rule tests, start the site with `-t frontend`, and test registration + inbox OTP end-to-end. Phase 2 is **not complete until those tests pass**. Login remains Phase 3.
+**Next step:** follow [Simple Registration + Login + Dashboard](docs/SIMPLE_LOGIN_REGISTER.md), run `php backend/scripts/check_phase2.php`, run both registration and authentication unit tests, and perform registration/login OTP tests in Chrome. Phase 2 is **not complete until those tests pass**. Remaining Phase 3 features include further alert/lockout testing and recovery integration.
 
