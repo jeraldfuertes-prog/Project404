@@ -8,11 +8,11 @@ bg_page_start('Home', 'home');
         <p class="eyebrow">The next generation of utility tracking</p>
         <h1 id="hero-title" class="hero__title glitch">HOUSEHOLD BILLS. <span>UNDER YOUR CONTROL.</span></h1>
         <p class="hero__copy">
-            BillGuard is a planned secure space to track electricity, water and internet bills,
-            organize payment history and protect household financial information.
+            BillGuard brings secure account access and a household billing overview together.
+            Register, verify your email, and sign in to reach your private dashboard.
         </p>
         <div class="hero__actions">
-            <a class="button" href="login.php">Explore log-in design <span aria-hidden="true">↗</span></a>
+            <a class="button" href="<?= isset($_SESSION[\'user_id\']) ? \'dashboard.php\' : \'login.php\' ?>"><?= isset($_SESSION[\'user_id\']) ? \'Open your dashboard\' : \'Log in to BillGuard\' ?> <span aria-hidden="true">↗</span></a>
             <a class="button button--ghost" href="#features">View features <span aria-hidden="true">↓</span></a>
         </div>
         <div class="hero__foot">
