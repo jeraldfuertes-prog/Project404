@@ -55,9 +55,9 @@ This roadmap follows the IT 107 **Security1 Student Handout**. **Status (Novembe
 
 **Checkpoint 2:** Registration, privacy consent, OTP, CAPTCHA, and both validation layers work.
 
-## Phase 3 — Login, OTP, lockouts, and alerts (Week 3)
+## Phase 3 — Login, OTP, lockouts, and alerts (Week 3) — PARTIAL IMPLEMENTATION
 
-**Goal:** Complete the first half of Checkpoint 3.
+**Goal:** Complete the first half of Checkpoint 3. **Current progress:** username/password/CAPTCHA login, email OTP, initial seeded lockout/IP block/alert logic, protected household dashboard and logout are committed. Full live testing, session idle warning, password recovery and instructor validation remain.
 
 - [ ] Login form with username, password, show/hide toggle, and server-verified CAPTCHA.
 - [ ] Identical message for unknown account and bad password.
