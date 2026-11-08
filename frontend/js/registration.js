@@ -47,16 +47,13 @@
   });
   updateStrength();
 
+  const containsControl = (text) => /\p{Cc}|\p{Cf}|\p{Cs}/u.test(text);
   const nameRule = (name, label) => {
     const text = value(name);
-    if (text.length < 2 || text.length > maxName) return label + ' must contain between 2 and ' + maxName + ' characters.';
-    if (/\d/.test(text)) return 'Numbers are not allowed in ' + label + '.';
-    if (/[^A-Za-z ]/.test(text)) return 'Special characters are not allowed in ' + label + '.';
-    if (text.includes('  ')) return 'Double space is not allowed in ' + label + '.';
-    if (/(.)\1\1/i.test(text)) return 'Three consecutive identical letters are not allowed in ' + label + '.';
-    if (text.toUpperCase() === text) return 'Do not use all capital letters in ' + label + '.';
-    if (!/^[A-Z]/.test(text)) return 'First letter of your ' + label + ' must be capital.';
-    if (!/^[A-Z][a-z]*(?: [A-Z][a-z]*)*$/.test(text)) return label + ' must use Title Case (for example: Juan Carlo).';
+    if (text.length < 2 || Array.from(text).length > maxName) {
+      return label + ' must contain between 2 and ' + maxName + ' characters.';
+    }
+    if (containsControl(text)) return label + ' contains unsupported control characters.';
     return '';
   };
   function validate(name) {
@@ -64,9 +61,9 @@
     if (name === 'first_name') return nameRule(name, 'First Name');
     if (name === 'family_name') return nameRule(name, 'Family Name');
     if (name === 'home_address') {
-      return text.length >= 5 && text.length <= 180 && !text.includes('  ')
-        && /^[A-Za-z0-9 ,.#/-]+$/.test(text)
-        ? '' : 'Home Address must contain 5 to 180 letters, digits, spaces, commas, dots, #, / or hyphens, without double spaces.';
+      if (containsControl(text)) return 'Home Address contains unsupported control characters.';
+      return Array.from(text).length >= 5 && Array.from(text).length <= 180
+        ? '' : 'Home Address must contain between 5 and 180 characters.';
     }
     if (name === 'email') {
       return text.length <= 100 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(text)
