@@ -13,8 +13,8 @@ try {
     $db = billguard_db();
     echo "MySQL connection: OK\n";
     $required = ['users', 'utility_bills', 'utility_payments', 'activity_log'];
-    $query = $db->query("SELECT table_name FROM information_schema.tables WHERE table_schema = DATABASE()");
-    $all = array_column($query->fetchAll(), 'table_name');
+    $query = $db->query("SELECT table_name AS check_table_name FROM information_schema.tables WHERE table_schema = DATABASE()");
+    $all = array_column($query->fetchAll(), 'check_table_name');
     $tablesReady = count(array_diff($required, $all)) === 0;
     echo 'Required dashboard tables: ' . ($tablesReady ? 'OK' : 'NOT READY') . PHP_EOL;
     if (!$tablesReady) exit(1);
