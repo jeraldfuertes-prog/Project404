@@ -71,5 +71,7 @@ function bg_app_end(): void
         </div>
     </div>
     <script src="js/dashboard-nav.js" defer></script>
-    <?php bg_page_end(); ?>
+    <?php
+    bg_page_end();
 }
+
