@@ -130,8 +130,6 @@ function bg_validate_registration(array $input, array $seed, PDO $db): array
     } elseif ($clean['name_extension'] === 'Other') {
         if (!in_array($clean['extension_other'], ['I', 'II', 'III', 'IV', 'IX', 'X'], true)) {
             $errors['extension_other'] = 'Other Name Extension must be I, II, III, IV, IX or X.';
-        } else {
-            $clean['name_extension'] = $clean['extension_other'];
         }
     }
 
