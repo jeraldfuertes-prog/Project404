@@ -33,23 +33,27 @@ bg_page_start('Privacy Notice', 'privacy');
     <div class="explainer__grid">
         <article class="card card--dark">
             <h3>01 / Information collected</h3>
-            <p>BillGuard collects your ID Number, names, date of birth, six address fields, email, username,
-                approved utility account number, primary utility type, service start date, household utility budget,
-                utility bills, payment records, and account security event records. We also record the date and time of consent.</p>
+            <p>For simplified registration, BillGuard collects your first name, last name, single-line home address,
+                email address, chosen username, security question answers and your consent timestamp.
+                The database also generates an internal account identifier and records relevant security events,
+                such as attempted logins and verification emails.</p>
+            <p>When future utility-bill features are enabled, additional billing and payment records may be collected
+                with an updated notice where required. The simplified sign-up does not currently ask for a birthdate,
+                student ID number, utility account number, or monthly utility budget.</p>
             <p>Passwords, OTPs and recovery answers are used for account protection and stored only as hashes.</p>
         </article>
         <article class="card card--dark">
             <h3>02 / Purpose of processing</h3>
             <p>The information is used to create and verify your protected account,
-                monitor your household's electricity, water and internet billing and payment history,
-                compare it with your budget, recover your account, and detect suspicious or unauthorized access.</p>
+                enable later household utility-bill monitoring, support account recovery,
+                and detect suspicious or unauthorized access.</p>
         </article>
         <article class="card card--dark">
             <h3>03 / Information protection</h3>
             <p>BillGuard uses server-side validation, password and recovery-answer hashing, email verification,
-                CAPTCHA, access controls, security monitoring and AES-256-GCM encryption for the utility account number.
-                Regular users can access only their own financial records when authenticated.
-                The security administrator's monitoring dashboard is limited to audit data.</p>
+                CAPTCHA on login, secure sessions, and owner-scoped dashboard access. The future utility account
+                number feature is planned to use AES-256-GCM encryption when it is introduced.
+                Security monitoring and admin functions remain separate from ordinary household records.</p>
         </article>
         <article class="card card--dark">
             <h3>04 / Retention of your information</h3>
