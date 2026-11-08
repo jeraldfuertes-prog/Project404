@@ -98,58 +98,21 @@ function bg_strength(string $password, int $min): string
 /** @return array{0:array<string,string>,1:array<string,string>} */
 function bg_validate_registration(array $input, array $seed, PDO $db): array
 {
-    $errors = [];
+    // Simplified registration. The internal ID is generated in PHP rather than supplied.
     $clean = [];
-    $fields = [
-        'id_number', 'first_name', 'middle_name', 'family_name',
-        'name_extension', 'extension_other', 'birthdate',
-        'street', 'barangay', 'city', 'province', 'country', 'zip_code',
-        'email', 'username', 'utility_account_number', 'primary_utility_type',
-        'service_start_date', 'monthly_utility_budget',
-        'answer_1', 'answer_2', 'answer_3',
-    ];
-    foreach ($fields as $key) {
+    foreach (['first_name', 'family_name', 'home_address', 'email', 'username', 'answer_1', 'answer_2', 'answer_3'] as $key) {
         $clean[$key] = bg_form_input($input, $key);
     }
-    $password = isset($input['password']) && is_string($input['password']) ? $input['password'] : '';
-    $passwordAgain = isset($input['password_confirm']) && is_string($input['password_confirm']) ? $input['password_confirm'] : '';
-
-    if (!preg_match('/^\d{4}-\d{4}$/D', $clean['id_number'])) {
-        $errors['id_number'] = 'ID Number must follow the format xxxx-xxxx.';
-    }
-    foreach (['first_name' => 'First Name', 'family_name' => 'Family Name'] as $field => $label) {
-        $errors[$field] = bg_name_error($clean[$field], $label, $seed['name_max']);
-        if ($errors[$field] === null) { unset($errors[$field]); }
-    }
-    if ($clean['middle_name'] !== '') {
-        $error = bg_name_error($clean['middle_name'], 'Middle Name', $seed['name_max']);
-        if ($error !== null) { $errors['middle_name'] = $error; }
-    }
-    if (!in_array($clean['name_extension'], ['', 'Jr.', 'Sr.', 'Other'], true)) {
-        $errors['name_extension'] = 'Please select a valid Name Extension.';
-    } elseif ($clean['name_extension'] === 'Other') {
-        if (!in_array($clean['extension_other'], ['I', 'II', 'III', 'IV', 'IX', 'X'], true)) {
-            $errors['extension_other'] = 'Other Name Extension must be I, II, III, IV, IX or X.';
-        }
+    $errors = [];
+    foreach (['first_name' => 'First Name', 'family_name' => 'Family Name'] as $key => $label) {
+        $message = bg_name_error($clean[$key], $label, (int) $seed['name_max']);
+        if ($message !== null) $errors[$key] = $message;
     }
 
-    $birthdate = bg_date($clean['birthdate']);
-    if ($birthdate === null || $birthdate > bg_now()) {
-        $errors['birthdate'] = 'Please enter a valid Birthdate that is not in the future.';
-    } elseif ($birthdate->diff(bg_now())->y < 18) {
-        $errors['birthdate'] = 'You must be at least 18 years old to register.';
-    }
-
-    $addressFields = [
-        'street' => 'Purok / Street', 'barangay' => 'Barangay',
-        'city' => 'Municipality / City', 'province' => 'Province', 'country' => 'Country',
-    ];
-    foreach ($addressFields as $field => $label) {
-        $error = bg_address_error($clean[$field], $label, $field === 'street');
-        if ($error !== null) { $errors[$field] = $error; }
-    }
-    if (!preg_match('/^\d{4}$/D', $clean['zip_code'])) {
-        $errors['zip_code'] = 'ZIP Code must contain exactly 4 digits.';
+    $address = $clean['home_address'];
+    if (strlen($address) < 5 || strlen($address) > 180 || str_contains($address, '  ')
+        || !preg_match('/^[A-Za-z0-9 ,.#\/-]+$/D', $address)) {
+        $errors['home_address'] = 'Home Address must contain 5 to 180 letters, digits, spaces, commas, dots, #, / or hyphens, without double spaces.';
     }
 
     $email = strtolower($clean['email']);
@@ -165,31 +128,16 @@ function bg_validate_registration(array $input, array $seed, PDO $db): array
         $errors['username'] = "Username must start with a letter and contain {$seed['username_min']}–{$seed['username_max']} letters or digits.";
     }
 
+    $password = isset($input['password']) && is_string($input['password']) ? $input['password'] : '';
+    $again = isset($input['password_confirm']) && is_string($input['password_confirm']) ? $input['password_confirm'] : '';
     if (strlen($password) < $seed['password_min'] || strlen($password) > 64) {
         $errors['password'] = "Password must be between {$seed['password_min']} and 64 characters.";
     } elseif (bg_strength($password, $seed['password_min']) === 'Weak') {
         $errors['password'] = 'Password strength is Weak. Use at least three of: uppercase, lowercase, digits and symbols.';
     }
-    if ($passwordAgain !== $password) {
-        $errors['password_confirm'] = 'Passwords do not match.';
-    }
+    if ($again !== $password) $errors['password_confirm'] = 'Passwords do not match.';
 
-    if (!preg_match('/^\d{8,12}$/D', $clean['utility_account_number'])) {
-        $errors['utility_account_number'] = 'Utility Account Number must contain 8 to 12 digits.';
-    }
-    if (!in_array($clean['primary_utility_type'], ['Electricity', 'Water', 'Internet'], true)) {
-        $errors['primary_utility_type'] = 'Please select a valid utility type.';
-    }
-    $start = bg_date($clean['service_start_date']);
-    if ($start === null || $start > bg_now()) {
-        $errors['service_start_date'] = 'Service Start Date must be a valid date that is not in the future.';
-    }
-    $budget = $clean['monthly_utility_budget'];
-    if (!preg_match('/^\d{1,6}(?:\.\d{1,2})?$/D', $budget)
-        || (float) $budget <= 0.0 || (float) $budget > 999999.99) {
-        $errors['monthly_utility_budget'] = 'Monthly Utility Budget must be greater than ₱0.00 and no more than ₱999,999.99.';
-    }
-
+    // Keep the three seed-selected recovery questions; Phase 4 relies on them.
     for ($i = 1; $i <= 3; $i++) {
         $answer = $clean["answer_{$i}"];
         if (strlen($answer) < 2 || strlen($answer) > 50
@@ -197,24 +145,37 @@ function bg_validate_registration(array $input, array $seed, PDO $db): array
             $errors["answer_{$i}"] = "Security Answer {$i} must contain 2–50 letters and spaces without double spaces.";
         }
     }
+
+    // Consent must be obtained before any personal registration data is saved.
     if (($input['privacy_consent'] ?? null) !== 'yes') {
         $errors['privacy_consent'] = 'You must agree to the Privacy Notice to register.';
     }
 
-    // Only do uniqueness lookups after values pass format checks.
+    // Protect all database lookups with prepared statements.
     foreach ([
-        'id_number' => ['id_number', 'This ID Number is already registered.'],
         'email' => ['email', 'This email is already registered.'],
         'username' => ['username', 'This username is already taken.'],
     ] as $field => [$column, $message]) {
         if (!isset($errors[$field])) {
-            // Whitelisted column identifiers; user input only via bound parameter.
-            $q = $db->prepare("SELECT 1 FROM users WHERE {$column} = :value LIMIT 1");
-            $q->execute([':value' => $clean[$field]]);
-            if ($q->fetchColumn()) { $errors[$field] = $message; }
+            $check = $db->prepare("SELECT 1 FROM users WHERE {$column} = :value LIMIT 1");
+            $check->execute([':value' => $clean[$field]]);
+            if ($check->fetchColumn()) $errors[$field] = $message;
         }
     }
-
-    // Passwords, confirmation and security answers are never returned for repopulation.
     return [$errors, $clean];
+}
+
+/**
+ * Generate a non-identifying internal primary key for the existing xxxx-xxxx DB schema.
+ * This is NOT a student ID. It intentionally differs from the handout's ID Number rule.
+ */
+function bg_generate_account_id(PDO $db): string
+{
+    $check = $db->prepare('SELECT 1 FROM users WHERE id_number = :id LIMIT 1');
+    for ($try = 0; $try < 30; $try++) {
+        $id = sprintf('%04d-%04d', random_int(0, 9999), random_int(0, 9999));
+        $check->execute([':id' => $id]);
+        if (!$check->fetchColumn()) return $id;
+    }
+    throw new RuntimeException('Unable to generate a unique account ID.');
 }
