@@ -1,4 +1,4 @@
-name: PHP Syntax and Registration Rule Tests
+name: PHP Syntax, Registration and Auth Tests
 
 on:
   push:
@@ -24,3 +24,5 @@ jobs:
         run: find frontend backend -type f -name '*.php' -print0 | xargs -0 -n1 php -l
       - name: Validate Phase 2 server-side rules
         run: php backend/tests/phase2_rules_test.php
+      - name: Validate seeded login lockouts and security thresholds
+        run: php backend/tests/auth_rules_test.php
