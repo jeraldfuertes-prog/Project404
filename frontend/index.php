@@ -12,7 +12,7 @@ bg_page_start('Home', 'home');
             Register, verify your email, and sign in to reach your private dashboard.
         </p>
         <div class="hero__actions">
-            <a class="button" href="<?= isset($_SESSION[\'user_id\']) ? \'dashboard.php\' : \'login.php\' ?>"><?= isset($_SESSION[\'user_id\']) ? \'Open your dashboard\' : \'Log in to BillGuard\' ?> <span aria-hidden="true">↗</span></a>
+            <a class="button" href="<?= isset($_SESSION['user_id']) ? 'dashboard.php' : 'login.php' ?>"><?= isset($_SESSION['user_id']) ? 'Open your dashboard' : 'Log in to BillGuard' ?> <span aria-hidden="true">↗</span></a>
             <a class="button button--ghost" href="#features">View features <span aria-hidden="true">↓</span></a>
         </div>
         <div class="hero__foot">
