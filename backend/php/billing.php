@@ -10,12 +10,12 @@ require_once __DIR__ . '/registration.php';
  */
 function bg_bill_schema_ready(PDO $db): bool
 {
-    $q = $db->query("SELECT column_name, column_type FROM information_schema.columns
+    $q = $db->query("SELECT column_name AS bill_column, column_type AS bill_type FROM information_schema.columns
         WHERE table_schema = DATABASE() AND table_name = 'utility_bills'
             AND column_name IN ('custom_utility_name', 'utility_type')");
     $columns = [];
     foreach ($q->fetchAll() as $row) {
-        $columns[$row['column_name']] = $row['column_type'];
+        $columns[$row['bill_column']] = $row['bill_type'];
     }
     return array_key_exists('custom_utility_name', $columns)
         && str_contains((string) ($columns['utility_type'] ?? ''), "'Other'");
