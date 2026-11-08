@@ -6,15 +6,10 @@ Rules are enforced by `backend/php/registration.php`. Browser feedback is provid
 
 | Field | Rule | User-facing error |
 | --- | --- | --- |
-| First Name / Last Name | Minimum 2, maximum `20 + D2` characters | `{Field} must contain between 2 and {max} characters.` |
-| First Name / Last Name | No numbers | `Numbers are not allowed in {Field}.` |
-| First Name / Last Name | Letters/spaces only | `Special characters are not allowed in {Field}.` |
-| First Name / Last Name | No doubled spaces | `Double space is not allowed in {Field}.` |
-| First Name / Last Name | No three repeated letters | `Three consecutive identical letters are not allowed in {Field}.` |
-| First Name / Last Name | Not ALL CAPS | `Do not use all capital letters in {Field}.` |
-| First Name / Last Name | Initial letter capitalized | `First letter of your {Field} must be capital.` |
-| First Name / Last Name | Title Case | `{Field} must use Title Case (for example: Juan Carlo).` |
-| Home Address | 5–180 characters; letters, numbers, spaces, commas, periods, #, slash and hyphen; no doubled spaces | Home Address must contain 5 to 180 letters, digits, spaces, commas, dots, #, / or hyphens, without double spaces. |
+| First Name / Last Name | Any printable uppercase/lowercase letters, accents, punctuation, digits, or other special characters; length 2 to `20 + D2` Unicode characters | `{Field} must contain between 2 and {max} characters.` |
+| First Name / Last Name | No control characters or invalid UTF-8 | `{Field} contains unsupported control characters.` |
+| Home Address | Any printable letters, Unicode characters, numbers, or punctuation; 5–180 characters | Home Address must contain between 5 and 180 characters. |
+| Home Address | No control characters or invalid UTF-8 | Home Address contains unsupported control characters. |
 | Email | Valid email, max 100 characters, lowercase when saved | Please enter a valid email address (maximum 100 characters). |
 | Email | Unique | This email is already registered. |
 | Username | Starts with letter, letters/digits only, seeded `6+(D1 mod 3)` to `16+(D2 mod 5)` | `Username must start with a letter and contain {min}–{max} letters or digits.` |
