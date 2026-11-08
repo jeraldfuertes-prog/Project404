@@ -15,6 +15,7 @@ function bg_send_otp(PDO $db, string $userId, string $email, string $purpose, ar
     $now = bg_now();
     $nowSql = $now->format('Y-m-d H:i:s');
     $window = $now->modify('-15 minutes')->format('Y-m-d H:i:s');
+    $stage = 'database';
 
     try {
         $db->beginTransaction();
@@ -67,14 +68,33 @@ function bg_send_otp(PDO $db, string $userId, string $email, string $purpose, ar
             ':uid' => $userId, ':purpose' => $purpose, ':hash' => $hash,
             ':expiry' => $expiry, ':created' => $nowSql,
         ]);
-        bg_mail_otp($email, $code, $purpose, $expiry, $config);
+        // Insert the audit event BEFORE SMTP sends, so an audit/SQL error
+        // cannot cause an email to be delivered for a rolled-back OTP.
         bg_log($db, 'OTP_SENT', null, $userId, ['purpose' => $purpose, 'resend' => $resend]);
+        $stage = 'smtp';
+        bg_mail_otp($email, $code, $purpose, $expiry, $config);
+        $stage = 'commit';
         $db->commit();
         return ['ok' => true, 'message' => 'A six-digit code was sent to your email.', 'wait' => 60, 'expiry' => $seed['otp_expiry']];
     } catch (Throwable $e) {
         if ($db->inTransaction()) { $db->rollBack(); }
-        error_log('BillGuard: OTP email delivery or database transaction failed.');
-        return ['ok' => false, 'message' => 'Unable to send the code right now. Check your SMTP setup and try again.'];
+        // Do NOT write raw SMTP exceptions: they may contain account data.
+        // Log only sanitized stages / categories into backend/logs/php-error.log.
+        if ($stage === 'smtp') {
+            error_log('BillGuard OTP send failed [SMTP] [' . bg_mail_error_category($e) . ']');
+            return [
+                'ok' => false,
+                'message' => 'We could not deliver the verification email. Your account is still pending. '
+                    . 'Check the SMTP App Password privately, then select Resend OTP.',
+            ];
+        }
+        $sqlState = $e instanceof PDOException ? (string) $e->getCode() : 'non-PDO';
+        error_log('BillGuard OTP send failed [' . $stage . '] [SQLSTATE: ' . $sqlState . ']');
+        return [
+            'ok' => false,
+            'message' => 'Verification could not be completed. Your account is still pending; '
+                . 'please use Resend OTP to try again.',
+        ];
     }
 }
 
