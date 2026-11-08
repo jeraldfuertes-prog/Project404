@@ -37,9 +37,9 @@ This roadmap follows the IT 107 **Security1 Student Handout**. **Status (Novembe
 
 **Deliverable:** Local application shell + successful DB and email connectivity.
 
-## Phase 2 — Registration and email verification (Week 2)
+## Phase 2 — Registration and email verification (Week 2) — IMPLEMENTED / TESTING
 
-**Goal:** Complete Checkpoint 2 end-to-end.
+**Goal:** Complete Checkpoint 2 end-to-end. **Code is committed; local GD, seed, privacy setup, registration and OTP tests remain.** See [Phase 2 Setup](PHASE2_SETUP.md), [Error Mapping](PHASE2_ERROR_MAPPING.md), and [Design Decisions](PHASE2_DESIGN_DECISIONS.md).
 
 - [ ] Core registration fields from Section 4.1, plus instructor-approved system fields.
 - [ ] Individual browser AND server validators, correct error under each field, and full error-message mapping.
