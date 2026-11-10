@@ -8,7 +8,6 @@ $error = '';
 $notice = (string) ($_SESSION['login_notice'] ?? '');
 unset($_SESSION['login_notice']);
 $locked = 0;
-$forgotShown = false;
 try {
     $config = billguard_config();
     $seed = bg_seed($config);
@@ -45,7 +44,6 @@ try {
                     if ($locked > 0) {
                         $_SESSION['login_link_lockout_until'] = time() + $locked;
                     }
-                    $forgotShown = (int) ($result['failures'] ?? 0) >= 2 + ($seed['d1'] % 2);
                 } else {
                     $user = $result['user'];
                     session_regenerate_id(true);
@@ -125,13 +123,11 @@ bg_page_start('Log-in', 'login');
             <button class="button button--full" id="login-submit" type="submit"
                 <?= $locked > 0 ? 'disabled' : '' ?>>Sign In</button>
         </form>
-        <?php if ($forgotShown): ?>
-            <p class="form-hint">
-                Having trouble signing in?
-                <a href="forgot-password.php">Start password recovery</a>.
-                The identity-verification and reset steps are still being built.
-            </p>
-        <?php endif; ?>
+        <p class="login-recovery-action">
+            <a class="button button--ghost button--full" href="forgot-password.php">
+                Forgot Password?
+            </a>
+        </p>
         <?php if ($locked > 0): ?>
             <p class="simple-auth__links app-muted">Registration link temporarily hidden during the account lockout.</p>
         <?php else: ?>
