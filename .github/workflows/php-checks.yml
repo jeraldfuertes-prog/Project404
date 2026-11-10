@@ -36,6 +36,8 @@ jobs:
         run: php backend/tests/recovery_entry_rules_test.php
       - name: Validate Phase 4.2 security-question and answer rules
         run: php backend/tests/recovery_question_rules_test.php
+      - name: Validate email-first recovery and OTP state rules
+        run: php backend/tests/recovery_email_rules_test.php
 
 
   billing-integration:
@@ -83,3 +85,8 @@ jobs:
           BG_TEST_DB_PASS: billing_ci_test_only
           BG_RECOVERY_QUESTION_CI: yes
         run: php backend/tests/recovery_question_integration_test.php
+      - name: Validate email-first recovery and reset code safety in isolated MySQL
+        env:
+          BG_TEST_DB_PASS: billing_ci_test_only
+          BG_RECOVERY_EMAIL_CI: yes
+        run: php backend/tests/recovery_email_integration_test.php
