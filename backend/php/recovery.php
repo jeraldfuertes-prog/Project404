@@ -9,9 +9,8 @@ require_once __DIR__ . '/auth.php';
  * password-change stages MUST be implemented and independently checked
  * before a password is ever modified.
  */
-const BG_RECOVERY_ENTRY_NOTICE = 'Request received. If the account is eligible, '
-    . 'the next step will be security-question verification. '
-    . 'That step is not available yet. No email was sent and no password was changed.';
+const BG_RECOVERY_ENTRY_NOTICE = 'Request received. Continue to security-question verification. '
+    . 'No email was sent and no password was changed.';
 
 function bg_recovery_username_error(string $username, array $seed): ?string
 {
