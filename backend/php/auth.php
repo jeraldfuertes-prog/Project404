@@ -54,6 +54,19 @@ function bg_login_lockout(int $failures, array $seed): array
     return [0, 0];
 }
 
+/**
+ * Alert retry tier is based on all failures since the last successful login.
+ * Unlike lockout timing, alert attempts also apply just AFTER a threshold,
+ * allowing a retry when SMTP was temporarily unavailable at 3, 6 or 9.
+ */
+function bg_login_alert_tier(int $failures): int
+{
+    if ($failures >= 9) return 3;
+    if ($failures >= 6) return 2;
+    if ($failures >= 3) return 1;
+    return 0;
+}
+
 function bg_ip_is_blocked(PDO $db, string $ip): bool
 {
     $q = $db->prepare('SELECT blocked_until FROM ip_blocks WHERE ip_address = :ip');
@@ -147,21 +160,23 @@ function bg_login_password(PDO $db, array $config, array $seed, string $username
             [$tier, $seconds] = bg_login_lockout($failures, $seed);
             $lockoutUntil = $seconds ? $now->modify("+{$seconds} seconds")->format('Y-m-d H:i:s') : null;
             $lastAlerted = (int) $user['last_alerted_tier'];
-            $shouldAlert = $tier > $lastAlerted && $tier > 0
+            $alertTier = bg_login_alert_tier($failures);
+            $shouldAlert = $alertTier > $lastAlerted
                 && $user['account_status'] === 'active'
                 && $user['email_verified_at'] !== null;
+            // Update the alerted tier only AFTER the email is accepted.
+            // SMTP failures should not permanently suppress security alerts.
             $update = $db->prepare('UPDATE users
-                SET consecutive_failures = :fails, lockout_until = :until,
-                    last_alerted_tier = :alert WHERE id_number = :uid');
+                SET consecutive_failures = :fails, lockout_until = :until
+                WHERE id_number = :uid');
             $update->execute([
                 ':fails' => $failures,
                 ':until' => $lockoutUntil,
-                ':alert' => $shouldAlert ? $tier : $lastAlerted,
                 ':uid' => $user['id_number'],
             ]);
             if ($tier > 0) bg_log($db, 'LOCKOUT_TIER_' . $tier, $username, $user['id_number'], ['seconds' => $seconds]);
             if ($shouldAlert) {
-                $alert = ['to' => $user['email'], 'tier' => $tier, 'fails' => $failures, 'id' => $user['id_number']];
+                $alert = ['to' => $user['email'], 'tier' => $alertTier, 'fails' => $failures, 'id' => $user['id_number']];
             }
         }
 
@@ -174,6 +189,13 @@ function bg_login_password(PDO $db, array $config, array $seed, string $username
             (string) $alert['to'], $alert['tier'], $alert['fails'], $ip,
             substr((string) ($_SERVER['HTTP_USER_AGENT'] ?? 'Unknown'), 0, 300), $config
         )) {
+            $markSent = $db->prepare('UPDATE users SET last_alerted_tier = :tier
+                WHERE id_number = :uid AND last_alerted_tier < :tier_check');
+            $markSent->execute([
+                ':tier' => $alert['tier'],
+                ':tier_check' => $alert['tier'],
+                ':uid' => $alert['id'],
+            ]);
             bg_log($db, 'ALERT_EMAIL_SENT', null, $alert['id'], ['tier' => $alert['tier']]);
         }
         if ($ipBlocked) {
@@ -197,12 +219,18 @@ function bg_verify_login_otp(PDO $db, string $userId, string $code): array
 {
     try {
         $db->beginTransaction();
-        $lock = $db->prepare("SELECT id_number, account_status, email_verified_at
+        $lock = $db->prepare("SELECT id_number, account_status, email_verified_at, lockout_until
             FROM users WHERE id_number = :uid FOR UPDATE");
         $lock->execute([':uid' => $userId]);
         $user = $lock->fetch();
         if (!$user || $user['account_status'] !== 'active' || !$user['email_verified_at']) {
             throw new RuntimeException('Account not active.');
+        }
+        // An OTP issued before a later account lockout must not bypass the lockout.
+        if ($user['lockout_until'] !== null
+            && $user['lockout_until'] > bg_now()->format('Y-m-d H:i:s')) {
+            $db->commit();
+            return ['ok' => false, 'message' => 'Account temporarily locked. Please try again after the lockout expires.'];
         }
 
         $q = $db->prepare("SELECT id, otp_hash, expires_at, failed_attempts, consumed_at, cancelled_at
