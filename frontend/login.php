@@ -46,8 +46,16 @@ try {
                     $user = $result['user'];
                     session_regenerate_id(true);
                     $_SESSION['login_pending_id'] = $user['id_number'];
+                    // Pending authentication expires even if the verification page is left open.
+                    $_SESSION['login_pending_at'] = time();
                     $sent = bg_send_otp($db, $user['id_number'], $user['email'], 'login', $config, $seed, false);
-                    $_SESSION['login_message'] = $sent['message'];
+                    if ($sent['ok']) {
+                        $_SESSION['login_message'] = $sent['message'];
+                        unset($_SESSION['login_send_error']);
+                    } else {
+                        $_SESSION['login_send_error'] = $sent['message'];
+                        unset($_SESSION['login_message']);
+                    }
                     header('Location: login-otp.php', true, 303);
                     exit;
                 }
@@ -104,12 +112,23 @@ bg_page_start('Log-in', 'login');
                 <span>I have read the <a href="privacy.php" target="_blank" rel="noopener noreferrer">Privacy Notice</a>.
                     <span class="form-required">*</span></span>
             </label>
-            <button class="button button--full" type="submit" <?= $locked > 0 ? 'disabled' : '' ?>>Sign In</button>
+            <?php if ($locked > 0): ?>
+                <div class="notice notice--error" id="login-lockout-countdown" role="status"
+                    aria-live="polite" data-wait="<?= (int) $locked ?>">
+                    Account login temporarily locked. Retry in <?= (int) $locked ?> seconds.
+                </div>
+            <?php endif; ?>
+            <button class="button button--full" id="login-submit" type="submit"
+                <?= $locked > 0 ? 'disabled' : '' ?>>Sign In</button>
         </form>
         <?php if ($forgotShown): ?>
             <p class="form-hint">Account recovery is planned for Phase 4. Ask the project administrator for assistance until the secure recovery flow is available.</p>
         <?php endif; ?>
-        <p class="simple-auth__links">Don't have an account? <a href="register.php">Register here</a></p>
+        <?php if ($locked > 0): ?>
+            <p class="simple-auth__links app-muted">Registration link temporarily hidden during the account lockout.</p>
+        <?php else: ?>
+            <p class="simple-auth__links">Don't have an account? <a href="register.php">Register here</a></p>
+        <?php endif; ?>
         <p class="form-hint">For your security, the dashboard opens only after your email OTP is verified.</p>
     </div>
 </section>
