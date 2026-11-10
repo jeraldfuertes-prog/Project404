@@ -126,7 +126,11 @@ bg_page_start('Log-in', 'login');
                 <?= $locked > 0 ? 'disabled' : '' ?>>Sign In</button>
         </form>
         <?php if ($forgotShown): ?>
-            <p class="form-hint">Account recovery is planned for Phase 4. Ask the project administrator for assistance until the secure recovery flow is available.</p>
+            <p class="form-hint">
+                Having trouble signing in?
+                <a href="forgot-password.php">Start password recovery</a>.
+                The identity-verification and reset steps are still being built.
+            </p>
         <?php endif; ?>
         <?php if ($locked > 0): ?>
             <p class="simple-auth__links app-muted">Registration link temporarily hidden during the account lockout.</p>
