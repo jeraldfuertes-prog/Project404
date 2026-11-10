@@ -5,7 +5,8 @@ require_once dirname(__DIR__) . '/backend/php/layout.php';
 bg_secure_start();
 
 $error = '';
-$notice = '';
+$notice = (string) ($_SESSION['login_notice'] ?? '');
+unset($_SESSION['login_notice']);
 $locked = 0;
 $forgotShown = false;
 try {
@@ -41,6 +42,9 @@ try {
                 if (!$result['ok']) {
                     $error = (string) $result['message'];
                     $locked = (int) ($result['lockout'] ?? 0);
+                    if ($locked > 0) {
+                        $_SESSION['login_link_lockout_until'] = time() + $locked;
+                    }
                     $forgotShown = (int) ($result['failures'] ?? 0) >= 2 + ($seed['d1'] % 2);
                 } else {
                     $user = $result['user'];
