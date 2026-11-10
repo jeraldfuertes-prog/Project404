@@ -1,5 +1,7 @@
 # BillGuard Phase 4.1 — Account Recovery Entry
 
+> **Update for Phase 4.2:** The question-verification page is now active. After a valid username/CAPTCHA submission, BillGuard redirects to recovery-question.php instead of remaining on the entry confirmation. Correct, wrong, and unknown-account answers receive the same generic visible result. **No reset OTP or password change is active yet.** Follow the newer [Phase 4.2 guide](PHASE4_2_SECURITY_QUESTIONS.md) for current Chrome testing steps.
+
 **Scope:** Implemented in GitHub source. **Local Chrome testing remains pending.**
 Only the username/CAPTCHA entry step is active. Security-question verification,
 reset email OTP, changing passwords and session-warning UI are planned for
