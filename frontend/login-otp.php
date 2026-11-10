@@ -5,13 +5,17 @@ require_once dirname(__DIR__) . '/backend/php/layout.php';
 bg_secure_start();
 
 $id = $_SESSION['login_pending_id'] ?? null;
-if (!is_string($id) || !preg_match('/^\d{4}-\d{4}$/D', $id)) {
+$pendingAt = (int) ($_SESSION['login_pending_at'] ?? 0);
+if (!is_string($id) || !preg_match('/^\d{4}-\d{4}$/D', $id)
+    || $pendingAt <= 0 || time() - $pendingAt > 600) {
+    unset($_SESSION['login_pending_id'], $_SESSION['login_pending_at'],
+        $_SESSION['login_message'], $_SESSION['login_send_error']);
     header('Location: login.php', true, 303);
     exit;
 }
-$error = '';
+$error = (string) ($_SESSION['login_send_error'] ?? '');
 $notice = (string) ($_SESSION['login_message'] ?? '');
-unset($_SESSION['login_message']);
+unset($_SESSION['login_message'], $_SESSION['login_send_error']);
 $wait = 0;
 $emailHint = '';
 $expiry = 3;
@@ -43,7 +47,8 @@ try {
             $code = is_string($_POST['otp'] ?? null) ? trim($_POST['otp']) : '';
             $result = bg_verify_login_otp($db, $id, $code);
             if ($result['ok']) {
-                unset($_SESSION['login_pending_id'], $_SESSION['login_message']);
+                unset($_SESSION['login_pending_id'], $_SESSION['login_pending_at'],
+                    $_SESSION['login_message'], $_SESSION['login_send_error']);
                 session_regenerate_id(true);
                 $_SESSION['user_id'] = $id;
                 $_SESSION['authenticated_at'] = time();
@@ -65,7 +70,12 @@ try {
         WHERE user_id = :id AND purpose = 'login' ORDER BY id DESC LIMIT 1");
     $latest->execute([':id' => $id]);
     $at = $latest->fetchColumn();
-    if ($at) $wait = max($wait, max(0, 60 - (bg_now()->getTimestamp() - strtotime((string) $at))));
+    if ($at) {
+        $wait = max($wait, max(0, 60 - (bg_now()->getTimestamp() - strtotime((string) $at))));
+    } elseif ($error === '' && $notice === '') {
+        $error = 'No login verification code has been sent yet. '
+            . 'Check the private SMTP setup, then select Resend Code.';
+    }
 } catch (Throwable $e) {
     error_log('BillGuard: login verification setup failed.');
     $error = 'Email verification is temporarily unavailable. Please try again.';
