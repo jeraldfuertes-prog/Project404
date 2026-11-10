@@ -1,13 +1,13 @@
 <?php
 declare(strict_types=1);
-require_once dirname(__DIR__) . '/backend/php/recovery.php';
+require_once dirname(__DIR__) . '/backend/php/recovery_email.php';
 require_once dirname(__DIR__) . '/backend/php/layout.php';
 bg_secure_start();
 
 $error = '';
 $notice = (string) ($_SESSION['bg_recovery_entry_notice'] ?? '');
 unset($_SESSION['bg_recovery_entry_notice']);
-$username = '';
+$email = '';
 $ready = true;
 try {
     $config = billguard_config();
@@ -23,23 +23,22 @@ try {
 if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
     // A new attempt must invalidate an earlier, incomplete candidate flow.
     unset($_SESSION['bg_recovery_flow']);
-    $username = is_string($_POST['username'] ?? null) ? trim($_POST['username']) : '';
+    $email = is_string($_POST['email'] ?? null) ? bg_recovery_normalize_email($_POST['email']) : '';
     if (!$ready) {
         $error = 'Account recovery is temporarily unavailable. Please try again later.';
     } elseif (!bg_check_csrf($_POST['csrf_token'] ?? null)) {
         http_response_code(403);
         bg_log($db, 'CSRF_REJECTED', null, null, ['page' => 'forgot-password']);
         $error = 'Your form session expired. Refresh this page and try again.';
-    } elseif (($usernameError = bg_recovery_username_error($username, $seed)) !== null) {
-        // Do not validate an account or accept a CAPTCHA bypass.
-        $error = $usernameError;
+    } elseif (($emailError = bg_recovery_email_error($email)) !== null) {
+        $error = $emailError;
     } else {
         $answer = is_string($_POST['captcha'] ?? null) ? $_POST['captcha'] : '';
         if (!bg_recovery_check_captcha($answer, time())) {
             bg_log($db, 'CAPTCHA_FAILED', null, null, ['page' => 'forgot-password']);
             $error = 'CAPTCHA is incorrect or expired. Refresh the image and try again.';
         } else {
-            $result = bg_recovery_entry($db, $username, $seed);
+            $result = bg_recovery_email_entry($db, $email, $seed, $config);
             if ($result['ok']) {
                 // A new PHP session ID protects this pre-verification workflow.
                 // This is NOT authentication and grants NO ability to reset a password.
@@ -48,9 +47,9 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                     'stage' => 'question_pending',
                     'started_at' => time(),
                     'candidate_id' => $result['candidate_id'],
+                    'code_sent' => $result['code_sent'],
                 ];
-                $_SESSION['bg_recovery_question_notice'] = 'Request received. '
-                    . 'Choose one of the three questions to continue.';
+                $_SESSION['bg_recovery_question_notice'] = $result['message'];
                 header('Location: recovery-question.php', true, 303);
                 exit;
             }
@@ -62,14 +61,14 @@ bg_page_start('Forgot Password', 'forgot-password');
 ?>
 <section class="simple-auth" aria-labelledby="recovery-heading">
     <div class="simple-auth__intro">
-        <p class="eyebrow">Account recovery / Phase 4.1–4.2</p>
+        <p class="eyebrow">Account recovery / Email + security questions</p>
         <h1 id="recovery-heading">FORGOT PASSWORD?</h1>
-        <p>Enter your BillGuard username and solve the security code to begin recovery.</p>
+        <p>Enter the email address registered with BillGuard and solve the CAPTCHA. If eligible, a six-digit recovery code will be emailed to you.</p>
     </div>
     <div class="card card--dark simple-auth__card">
         <div class="simple-auth__symbol" aria-hidden="true">B</div>
         <h2>Recovery Request</h2>
-        <p>We will not reveal whether a username belongs to an account.</p>
+        <p>For your privacy, the result will not reveal whether an email address is registered.</p>
         <?php if ($error !== ''): ?>
             <div class="notice notice--error" role="alert"><?= bg_safe($error) ?></div>
         <?php endif; ?>
@@ -81,13 +80,13 @@ bg_page_start('Forgot Password', 'forgot-password');
         <form action="forgot-password.php" method="post">
             <?= bg_csrf_field() ?>
             <div class="form-field">
-                <label class="form-label" for="username">
-                    Username <span class="form-required">*</span>
+                <label class="form-label" for="email">
+                    Registered Email Address <span class="form-required">*</span>
                 </label>
-                <input class="form-control" id="username" name="username"
-                    type="text" autocomplete="username" maxlength="40"
-                    placeholder="Enter your username" required
-                    value="<?= bg_safe($username) ?>">
+                <input class="form-control" id="email" name="email"
+                    type="email" autocomplete="email" maxlength="100"
+                    placeholder="Enter your registered email" required
+                    value="<?= bg_safe($email) ?>">
             </div>
             <div class="form-field">
                 <label class="form-label" for="captcha">
@@ -108,9 +107,9 @@ bg_page_start('Forgot Password', 'forgot-password');
             </button>
         </form>
         <p class="form-hint">
-            After CAPTCHA verification, you'll choose one of your three
-            security questions. Email reset OTP and password changes
-            will be available in later Phase 4 steps.
+            After submitting, check your email for a six-digit code and
+            answer one of the three questions you set at registration.
+            Both checks are required. Changing the password is not enabled yet.
         </p>
         <p class="simple-auth__links"><a href="login.php">Return to Login</a></p>
     </div>
