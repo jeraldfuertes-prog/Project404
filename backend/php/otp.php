@@ -20,11 +20,25 @@ function bg_send_otp(PDO $db, string $userId, string $email, string $purpose, ar
     try {
         $db->beginTransaction();
         // Serialize simultaneous resend/verify requests for this account.
-        $lock = $db->prepare('SELECT id_number FROM users WHERE id_number = :uid FOR UPDATE');
+        $lock = $db->prepare('SELECT id_number, account_status, email_verified_at, lockout_until
+            FROM users WHERE id_number = :uid FOR UPDATE');
         $lock->execute([':uid' => $userId]);
-        if (!$lock->fetchColumn()) {
+        $lockedUser = $lock->fetch();
+        if (!$lockedUser) {
             $db->rollBack();
-            return ['ok' => false, 'message' => 'This registration session is no longer valid.'];
+            return ['ok' => false, 'message' => 'Your verification session is no longer valid.'];
+        }
+        if ($purpose === 'login'
+            && ($lockedUser['account_status'] !== 'active'
+                || $lockedUser['email_verified_at'] === null
+                || ($lockedUser['lockout_until'] !== null
+                    && $lockedUser['lockout_until'] > $nowSql))) {
+            $db->rollBack();
+            return ['ok' => false, 'message' => 'Login verification is unavailable while the account is inactive or locked.'];
+        }
+        if ($purpose === 'register' && $lockedUser['account_status'] !== 'pending') {
+            $db->rollBack();
+            return ['ok' => false, 'message' => 'This account is no longer awaiting registration verification.'];
         }
 
         $latest = $db->prepare('SELECT created_at FROM one_time_passwords
@@ -82,18 +96,22 @@ function bg_send_otp(PDO $db, string $userId, string $email, string $purpose, ar
         // Log only sanitized stages / categories into backend/logs/php-error.log.
         if ($stage === 'smtp') {
             error_log('BillGuard OTP send failed [SMTP] [' . bg_mail_error_category($e) . ']');
+            $context = $purpose === 'register'
+                ? 'Your registration remains pending.'
+                : 'Your sign-in is not complete.';
             return [
                 'ok' => false,
-                'message' => 'We could not deliver the verification email. Your account is still pending. '
-                    . 'Check the SMTP App Password privately, then select Resend OTP.',
+                'message' => 'We could not deliver the verification email. ' . $context
+                    . ' Check the private SMTP setup, then request a new code.',
             ];
         }
         $sqlState = $e instanceof PDOException ? (string) $e->getCode() : 'non-PDO';
         error_log('BillGuard OTP send failed [' . $stage . '] [SQLSTATE: ' . $sqlState . ']');
         return [
             'ok' => false,
-            'message' => 'Verification could not be completed. Your account is still pending; '
-                . 'please use Resend OTP to try again.',
+            'message' => 'Verification could not be completed. '
+                . ($purpose === 'register' ? 'Your registration remains pending; ' : 'Your sign-in is not complete; ')
+                . 'please request a new code to try again.',
         ];
     }
 }
