@@ -72,10 +72,14 @@ This roadmap follows the IT 107 **Security1 Student Handout**. **Scope change (N
 
 **Deliverable:** Login secured with CAPTCHA, OTP, server lockout and alerts.
 
-## Phase 4 — Password recovery and session safety (Week 3)
+## Phase 4 — Password recovery and session safety (Week 3) — IN PROGRESS
 
 **Goal:** Finish Checkpoint 3.
 
+**Phase 4.1 implemented in source:** the new Forgot Password page accepts username + server-verified CAPTCHA, checks account/IP lockout status, applies a public recovery-entry request limit and gives identical visible confirmation for registered and unknown usernames. This is **only an entry step**, not a completed reset; security questions, reset email OTP, password updates and session warnings remain disabled until subsequent phases. GitHub automated tests pass; local browser tests are still required. See [Phase 4.1 guide](PHASE4_1_RECOVERY_ENTRY.md).
+
+- [x] Phase 4.1 — Forgot Password entry with username, CAPTCHA, non-enumerating response and lockout-aware candidate staging.
+- [ ] Phase 4.2 — Verify one of only the account's three stored security questions, without enumeration.
 - [ ] Forgot Password: username + CAPTCHA, security question choice from only the account's three questions.
 - [ ] Confirm re-entered answer; verify against hash without revealing whether a username exists.
 - [ ] Count wrong answers toward the same lockout as login.
