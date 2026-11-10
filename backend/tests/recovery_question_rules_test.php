@@ -34,9 +34,9 @@ question_check(!bg_recovery_answers_match('1234', '1234'),
     'Numeric-only answer rejected');
 question_check(!bg_recovery_answers_match(str_repeat('x', 51), str_repeat('x', 51)),
     'Overlong answer rejected');
-question_check(str_contains(BG_RECOVERY_QUESTION_NOTICE, 'No reset email was sent'),
-    'Question page does not claim reset OTP delivered');
-question_check(str_contains(BG_RECOVERY_QUESTION_NOTICE, 'no password was changed'),
+question_check(str_contains(BG_RECOVERY_QUESTION_NOTICE, 'email code'),
+    'Question confirmation references email code without exposing validity');
+question_check(str_contains(BG_RECOVERY_QUESTION_NOTICE, 'No password has been changed'),
     'Question page never claims password changed');
 
 $flow = ['stage' => 'question_pending', 'candidate_id' => '4444-5555',
@@ -54,6 +54,12 @@ question_check(bg_recovery_question_result_ready($flow, 1100),
 $flow['candidate_id'] = null;
 question_check(bg_recovery_question_result_ready($flow, 1100),
     'Unknown username gets indistinguishable completion state');
+$flow['stage'] = 'identity_verified';
+question_check(bg_recovery_question_result_ready($flow, 1100),
+    'Both-proofs verified stage renders the same outcome view');
+$flow['stage'] = 'identity_submitted';
+question_check(bg_recovery_question_result_ready($flow, 1100),
+    'Failed both-proofs stage renders same outcome view');
 $flow['stage'] = 'reset_allowed';
 question_check(!bg_recovery_question_result_ready($flow, 1100),
     'Question step cannot elevate to password reset permission');
