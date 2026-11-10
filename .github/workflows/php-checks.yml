@@ -64,3 +64,8 @@ jobs:
           BG_TEST_DB_HOST: 127.0.0.1
           BG_TEST_DB_PASS: billing_ci_test_only
         run: php backend/tests/billing_integration_test.php
+      - name: Validate Phase 3 login OTP lockouts alerts and IP blocking in MySQL
+        env:
+          BG_TEST_DB_PASS: billing_ci_test_only
+          BG_AUTH_INTEGRATION_CI: yes
+        run: php backend/tests/auth_integration_test.php
