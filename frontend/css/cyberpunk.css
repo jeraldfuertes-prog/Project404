@@ -659,3 +659,7 @@ strong { color: var(--cp-text); }
   .app-panel--table {padding:0;}
   .app-panel--table .app-panel__top {padding:15px;}
 }
+
+/* Login recovery action is visible without requiring failed sign-in attempts. */
+.login-recovery-action { margin: 14px 0 16px; }
+.login-recovery-action .button { width: 100%; }
