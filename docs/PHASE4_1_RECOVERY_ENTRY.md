@@ -1,5 +1,7 @@
 # BillGuard Phase 4.1 — Account Recovery Entry
 
+> **Current flow updated:** Recovery now starts with a **registered email address**, sends a six-digit recovery code to eligible verified accounts, then asks for the code and one of the three enrolled security questions. This older phase guide documents historical behavior; use [Email-First Recovery](EMAIL_FIRST_RECOVERY.md) for current testing. Password changes are not yet enabled.
+
 > **Update for Phase 4.2:** The question-verification page is now active. After a valid username/CAPTCHA submission, BillGuard redirects to recovery-question.php instead of remaining on the entry confirmation. Correct, wrong, and unknown-account answers receive the same generic visible result. **No reset OTP or password change is active yet.** Follow the newer [Phase 4.2 guide](PHASE4_2_SECURITY_QUESTIONS.md) for current Chrome testing steps.
 
 **Scope:** Implemented in GitHub source. **Local Chrome testing remains pending.**
