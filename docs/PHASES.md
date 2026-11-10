@@ -76,19 +76,14 @@ This roadmap follows the IT 107 **Security1 Student Handout**. **Scope change (N
 
 **Goal:** Finish Checkpoint 3.
 
-**Phase 4.1 + 4.2 implemented in source:** Forgot Password now validates username and server-side CAPTCHA, checks account/IP lockouts, then opens a security-question page listing only the three seed-selected enrolled questions. Answers are compared with the stored hashes, and incorrect answers count toward the same account and IP lockouts as login. Unknown accounts and incorrect answers receive the same visible result as correct answers. **No reset OTP is sent and no password is changed yet.** See [Phase 4.1 guide](PHASE4_1_RECOVERY_ENTRY.md) and [Phase 4.2 guide](PHASE4_2_SECURITY_QUESTIONS.md). Automated tests are integrated in GitHub Actions; local browser verification is still required.
+**Updated email-first recovery flow:** Users enter their registered **email** plus CAPTCHA, which triggers a six-digit reset-purpose OTP for eligible accounts. The next page shows the **three registered security questions** and asks for the emailed code plus one chosen question answer. Both must match for a short-lived server-side identity-verification state. Public results do not disclose which email exists or which answer was correct. No password modification is enabled until Phase 4.4. See [Current email-first recovery guide](EMAIL_FIRST_RECOVERY.md).
 
-- [x] Phase 4.1 — Forgot Password entry with username, CAPTCHA, non-enumerating response and lockout-aware candidate staging.
-- [x] Phase 4.2 — Verify one of only the account's three stored security questions, without enumeration.
-- [ ] Phase 4.3 — Send and verify password-reset email OTP after a verified question.
-- [ ] Forgot Password: username + CAPTCHA, security question choice from only the account's three questions.
-- [ ] Confirm re-entered answer; verify against hash without revealing whether a username exists.
-- [ ] Count wrong answers toward the same lockout as login.
-- [ ] Send/reset hashed, single-use email OTP.
-- [ ] Allow Change Password ONLY after the reset flow completes; block direct URL access.
-- [ ] Enforce seeded password length/strength, confirmation, and history of last 3 password hashes.
-- [ ] Invalidate reset permission after use and send successful password-change email.
-- [ ] Enforce seeded idle logout, 1-minute warning, and prevent showing protected pages after logout/back navigation.
+- [x] Phase 4.1 — Registered email + CAPTCHA with generic confirmation, IP/lockout protection, and throttled direct recovery-code email.
+- [x] Phase 4.2 — Show three original registration questions and securely verify one answer against the stored hash.
+- [x] Phase 4.3 — Verify expiring, hashed, single-use recovery email OTP together with the security answer; account lockout and resend limits enforced.
+- [ ] Phase 4.4 — Secure Change Password only after both proofs, enforce strength/history and notify owner.
+- [ ] Phase 4.5 — Idle session warning, renewal, and revoke older authenticated sessions after password change.
+- [ ] Phase 4.6 — Complete local browser and real-email delivery testing (automated GitHub CI tests passed).
 
 **Checkpoint 3:** Login + OTP, lockout, owner alerts, Forgot/Change Password, and logging.
 
