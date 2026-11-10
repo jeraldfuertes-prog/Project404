@@ -49,8 +49,9 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                     'started_at' => time(),
                     'candidate_id' => $result['candidate_id'],
                 ];
-                $_SESSION['bg_recovery_entry_notice'] = $result['message'];
-                header('Location: forgot-password.php', true, 303);
+                $_SESSION['bg_recovery_question_notice'] = 'Request received. '
+                    . 'Choose one of the three questions to continue.';
+                header('Location: recovery-question.php', true, 303);
                 exit;
             }
             $error = $result['message'];
@@ -61,7 +62,7 @@ bg_page_start('Forgot Password', 'forgot-password');
 ?>
 <section class="simple-auth" aria-labelledby="recovery-heading">
     <div class="simple-auth__intro">
-        <p class="eyebrow">Account recovery / Phase 4.1</p>
+        <p class="eyebrow">Account recovery / Phase 4.1–4.2</p>
         <h1 id="recovery-heading">FORGOT PASSWORD?</h1>
         <p>Enter your BillGuard username and solve the security code to begin recovery.</p>
     </div>
@@ -107,9 +108,9 @@ bg_page_start('Forgot Password', 'forgot-password');
             </button>
         </form>
         <p class="form-hint">
-            Phase 4.1 only checks the recovery request. Security questions,
-            reset email OTP, and password changes will be enabled in later Phase 4 steps.
-            No password is changed on this page.
+            After CAPTCHA verification, you'll choose one of your three
+            security questions. Email reset OTP and password changes
+            will be available in later Phase 4 steps.
         </p>
         <p class="simple-auth__links"><a href="login.php">Return to Login</a></p>
     </div>
