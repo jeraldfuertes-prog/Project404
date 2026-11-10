@@ -24,7 +24,14 @@ function bg_page_start(string $title, string $page = 'home'): void
     if ($loggedIn) {
         $navigation = ['home' => ['Home', 'index.php']];
     } elseif ($page === 'login' || $page === 'login-otp') {
-        $navigation = ['home' => ['Home', 'index.php'], 'register' => ['Register', 'register.php']];
+        $navigation = ['home' => ['Home', 'index.php']];
+        // UI link suppression during the actual server-side account lockout.
+        // Navigation is not used as an authorization control.
+        $lockoutUiActive = $page === 'login'
+            && (int) ($_SESSION['login_link_lockout_until'] ?? 0) > time();
+        if (!$lockoutUiActive) {
+            $navigation['register'] = ['Register', 'register.php'];
+        }
     } elseif ($page === 'register' || $page === 'verify-otp') {
         $navigation = ['home' => ['Home', 'index.php'], 'login' => ['Log-in', 'login.php']];
     } else {
