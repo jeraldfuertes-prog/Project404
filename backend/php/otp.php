@@ -28,7 +28,7 @@ function bg_send_otp(PDO $db, string $userId, string $email, string $purpose, ar
             $db->rollBack();
             return ['ok' => false, 'message' => 'Your verification session is no longer valid.'];
         }
-        if ($purpose === 'login'
+        if (in_array($purpose, ['login', 'reset'], true)
             && ($lockedUser['account_status'] !== 'active'
                 || $lockedUser['email_verified_at'] === null
                 || ($lockedUser['lockout_until'] !== null
@@ -46,9 +46,9 @@ function bg_send_otp(PDO $db, string $userId, string $email, string $purpose, ar
         $latest->execute([':uid' => $userId, ':purpose' => $purpose]);
         $last = $latest->fetch();
 
-        // Login code rate limits apply to BOTH fresh password submissions and
-        // Resend Code. Otherwise repeated correct-password attempts can flood email.
-        if ($resend || $purpose === 'login') {
+        // Login and reset OTP requests share per-purpose cooldown and limits
+        // for both first sends and resends, preventing inbox flooding.
+        if ($resend || in_array($purpose, ['login', 'reset'], true)) {
             $countQ = $db->prepare('SELECT COUNT(*) FROM one_time_passwords
                 WHERE user_id = :uid AND purpose = :purpose AND created_at >= :window');
             $countQ->execute([':uid' => $userId, ':purpose' => $purpose, ':window' => $window]);
@@ -98,9 +98,8 @@ function bg_send_otp(PDO $db, string $userId, string $email, string $purpose, ar
         // Log only sanitized stages / categories into backend/logs/php-error.log.
         if ($stage === 'smtp') {
             error_log('BillGuard OTP send failed [SMTP] [' . bg_mail_error_category($e) . ']');
-            $context = $purpose === 'register'
-                ? 'Your registration remains pending.'
-                : 'Your sign-in is not complete.';
+            $context = $purpose === 'register' ? 'Your registration remains pending.'
+                : ($purpose === 'reset' ? 'No password has been changed.' : 'Your sign-in is not complete.');
             return [
                 'ok' => false,
                 'message' => 'We could not deliver the verification email. ' . $context
@@ -112,7 +111,9 @@ function bg_send_otp(PDO $db, string $userId, string $email, string $purpose, ar
         return [
             'ok' => false,
             'message' => 'Verification could not be completed. '
-                . ($purpose === 'register' ? 'Your registration remains pending; ' : 'Your sign-in is not complete; ')
+                . ($purpose === 'register' ? 'Your registration remains pending; '
+                    : ($purpose === 'reset' ? 'No password has been changed; '
+                        : 'Your sign-in is not complete; '))
                 . 'please request a new code to try again.',
         ];
     }
