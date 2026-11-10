@@ -108,6 +108,11 @@ try {
         'Login OTP resend cannot bypass account lockout');
 
     $db->exec("UPDATE users SET lockout_until = NULL WHERE id_number = '3333-3333'");
+    // Initial login-code requests are rate-limited too, not only the resend button.
+    $throttledInitial = bg_send_otp($db, '3333-3333',
+        'security@example.test', 'login', $config, $seed, false);
+    verify_auth(!$throttledInitial['ok'] && ($throttledInitial['wait'] ?? 0) > 0,
+        'Fresh login OTP request respects cooldown and cannot flood email');
     $badOtp = bg_verify_login_otp($db, '3333-3333', '000000');
     verify_auth(!$badOtp['ok'], 'Invalid login OTP is rejected');
     $goodOtp = bg_verify_login_otp($db, '3333-3333', '123456');
