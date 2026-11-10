@@ -1,5 +1,7 @@
 # BillGuard Phase 4.2 — Security Question Verification
 
+> **Current flow updated:** Recovery now starts with a **registered email address**, sends a six-digit recovery code to eligible verified accounts, then asks for the code and one of the three enrolled security questions. This older phase guide documents historical behavior; use [Email-First Recovery](EMAIL_FIRST_RECOVERY.md) for current testing. Password changes are not yet enabled.
+
 **Status:** Implemented in GitHub; local Chrome testing remains to be completed.
 **Scope:** Security questions only. Reset-email OTP and changing passwords are **not enabled** until Phases 4.3–4.4.
 
