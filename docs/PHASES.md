@@ -76,10 +76,11 @@ This roadmap follows the IT 107 **Security1 Student Handout**. **Scope change (N
 
 **Goal:** Finish Checkpoint 3.
 
-**Phase 4.1 implemented in source:** the new Forgot Password page accepts username + server-verified CAPTCHA, checks account/IP lockout status, applies a public recovery-entry request limit and gives identical visible confirmation for registered and unknown usernames. This is **only an entry step**, not a completed reset; security questions, reset email OTP, password updates and session warnings remain disabled until subsequent phases. GitHub automated tests pass; local browser tests are still required. See [Phase 4.1 guide](PHASE4_1_RECOVERY_ENTRY.md).
+**Phase 4.1 + 4.2 implemented in source:** Forgot Password now validates username and server-side CAPTCHA, checks account/IP lockouts, then opens a security-question page listing only the three seed-selected enrolled questions. Answers are compared with the stored hashes, and incorrect answers count toward the same account and IP lockouts as login. Unknown accounts and incorrect answers receive the same visible result as correct answers. **No reset OTP is sent and no password is changed yet.** See [Phase 4.1 guide](PHASE4_1_RECOVERY_ENTRY.md) and [Phase 4.2 guide](PHASE4_2_SECURITY_QUESTIONS.md). Automated tests are integrated in GitHub Actions; local browser verification is still required.
 
 - [x] Phase 4.1 — Forgot Password entry with username, CAPTCHA, non-enumerating response and lockout-aware candidate staging.
-- [ ] Phase 4.2 — Verify one of only the account's three stored security questions, without enumeration.
+- [x] Phase 4.2 — Verify one of only the account's three stored security questions, without enumeration.
+- [ ] Phase 4.3 — Send and verify password-reset email OTP after a verified question.
 - [ ] Forgot Password: username + CAPTCHA, security question choice from only the account's three questions.
 - [ ] Confirm re-entered answer; verify against hash without revealing whether a username exists.
 - [ ] Count wrong answers toward the same lockout as login.
