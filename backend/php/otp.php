@@ -46,14 +46,16 @@ function bg_send_otp(PDO $db, string $userId, string $email, string $purpose, ar
         $latest->execute([':uid' => $userId, ':purpose' => $purpose]);
         $last = $latest->fetch();
 
-        if ($resend) {
+        // Login code rate limits apply to BOTH fresh password submissions and
+        // Resend Code. Otherwise repeated correct-password attempts can flood email.
+        if ($resend || $purpose === 'login') {
             $countQ = $db->prepare('SELECT COUNT(*) FROM one_time_passwords
                 WHERE user_id = :uid AND purpose = :purpose AND created_at >= :window');
             $countQ->execute([':uid' => $userId, ':purpose' => $purpose, ':window' => $window]);
             // Initial code + no more than 3 resends within 15 minutes.
             if ((int) $countQ->fetchColumn() >= 4) {
                 $db->rollBack();
-                return ['ok' => false, 'message' => 'Maximum of three resends in 15 minutes reached. Try again later.'];
+                return ['ok' => false, 'message' => 'Maximum of four verification emails in 15 minutes reached. Try again later.'];
             }
             if ($last) {
                 $seconds = $now->getTimestamp() - strtotime((string) $last['created_at']);
