@@ -8,6 +8,9 @@ $id = $_SESSION['login_pending_id'] ?? null;
 $pendingAt = (int) ($_SESSION['login_pending_at'] ?? 0);
 if (!is_string($id) || !preg_match('/^\d{4}-\d{4}$/D', $id)
     || $pendingAt <= 0 || time() - $pendingAt > 600) {
+    if (is_string($id) && $id !== '' && $pendingAt > 0) {
+        $_SESSION['login_notice'] = 'Your verification session expired. Please sign in again.';
+    }
     unset($_SESSION['login_pending_id'], $_SESSION['login_pending_at'],
         $_SESSION['login_message'], $_SESSION['login_send_error']);
     header('Location: login.php', true, 303);
