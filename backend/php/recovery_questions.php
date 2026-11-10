@@ -3,12 +3,12 @@ declare(strict_types=1);
 require_once __DIR__ . '/recovery.php';
 
 /**
- * Phase 4.2 has NO permission to email a password-reset OTP or change a
- * password. The server-only question_verified stage is future input to 4.3.
+ * Question + reset code are now separate proofs on the same recovery page.
+ * Neither this module nor OTP verification changes the account password.
  */
-const BG_RECOVERY_QUESTION_NOTICE = 'Your answer has been submitted. If the details matched, '
-    . 'email verification will be the next step when that feature is available. '
-    . 'No reset email was sent and no password was changed.';
+const BG_RECOVERY_QUESTION_NOTICE = 'Your recovery verification has been submitted. '
+    . 'If both the email code and your security answer matched, identity checks are complete. '
+    . 'No password has been changed; that step will be enabled in Phase 4.4.';
 
 /** The three questions selected using the enrollment seed. */
 function bg_recovery_question_choices(array $seed): array
@@ -35,7 +35,8 @@ function bg_recovery_answers_match(string $answer, string $confirmation): bool
 function bg_recovery_question_result_ready(mixed $flow, int $now): bool
 {
     if (!is_array($flow) || !in_array($flow['stage'] ?? null,
-        ['question_verified', 'question_submitted'], true)) {
+        ['question_verified', 'question_submitted',
+            'identity_verified', 'identity_submitted'], true)) {
         return false;
     }
     $copy = $flow;
