@@ -48,6 +48,8 @@ try {
                     $user = $result['user'];
                     session_regenerate_id(true);
                     $_SESSION['login_pending_id'] = $user['id_number'];
+                    $_SESSION['login_pending_password_fingerprint'] =
+                        bg_auth_password_fingerprint((string) $user['password_hash']);
                     // Pending authentication expires even if the verification page is left open.
                     $_SESSION['login_pending_at'] = time();
                     $sent = bg_send_otp($db, $user['id_number'], $user['email'], 'login', $config, $seed, false);
