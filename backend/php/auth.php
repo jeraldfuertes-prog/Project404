@@ -9,16 +9,32 @@ function bg_auth_password_fingerprint(string $passwordHash): string
     return hash('sha256', $passwordHash);
 }
 
-/** Authentication and access helpers: never grant a session before login OTP. */
-function bg_auth_user(PDO $db, array $seed): ?array
+/** Seeded inactivity period used by both server authorization and UI warning. */
+function bg_idle_timeout_seconds(array $seed): int
+{
+    return (5 + ((int) $seed['d1'] % 5)) * 60;
+}
+
+/** Remaining inactivity time. A missing/expired activity marker has no grace. */
+function bg_session_remaining_seconds(int $lastActivity, array $seed, int $now): int
+{
+    if ($lastActivity <= 0 || $lastActivity > $now) return 0;
+    return max(0, $lastActivity + bg_idle_timeout_seconds($seed) - $now);
+}
+
+/**
+ * Authentication/access checks must never accept expired sessions.
+ * Ordinary protected pages refresh activity. Passive status checks set
+ * $renewActivity=false so a background read cannot silently extend login.
+ */
+function bg_auth_user(PDO $db, array $seed, bool $renewActivity = true): ?array
 {
     $id = $_SESSION['user_id'] ?? null;
     if (!is_string($id) || !preg_match('/^\d{4}-\d{4}$/D', $id)) {
         return null;
     }
     $last = (int) ($_SESSION['last_activity'] ?? 0);
-    $idle = (5 + ($seed['d1'] % 5)) * 60;
-    if ($last < 1 || time() - $last >= $idle) {
+    if (bg_session_remaining_seconds($last, $seed, time()) === 0) {
         bg_sign_out();
         return null;
     }
@@ -33,7 +49,7 @@ function bg_auth_user(PDO $db, array $seed): ?array
         return null;
     }
     unset($user['password_hash']);
-    $_SESSION['last_activity'] = time();
+    if ($renewActivity) $_SESSION['last_activity'] = time();
     return $user;
 }
 
