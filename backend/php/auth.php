@@ -12,7 +12,7 @@ function bg_auth_password_fingerprint(string $passwordHash): string
 /** Seeded inactivity period used by both server authorization and UI warning. */
 function bg_idle_timeout_seconds(array $seed): int
 {
-    return (5 + ((int) $seed['d1'] % 5)) * 60;
+    return 1 * 60;
 }
 
 /** Remaining inactivity time. A missing/expired activity marker has no grace. */
