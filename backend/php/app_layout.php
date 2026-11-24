@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 require_once __DIR__ . '/layout.php';
+require_once __DIR__ . '/auth.php';
 
 /**
  * A shared, keyboard-accessible sliding sidebar for all authenticated pages.
