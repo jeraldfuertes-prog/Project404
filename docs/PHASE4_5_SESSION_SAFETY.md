@@ -4,6 +4,58 @@
 preserves the Phase 3 seeded server-side inactivity timeout. No database
 migration is required.
 
+## 30-second inactivity demonstration (November 24 fix)
+
+The server timeout and the warning lead are **different durations**. If you
+change `bg_idle_timeout_seconds()` to `return 1 * 30;`, you set the **entire
+session** to 30 seconds. With the original 60-second warning lead, the dialog
+appeared immediately. In addition, the former 60-second interaction-POST
+throttle could not renew a 30-second session.
+
+**For the requested behavior — work normally; after 30 seconds of no mouse,
+keyboard, scroll or touch activity show the warning; then allow a 60-second
+countdown — use a 90-second total inactivity timeout** for the demonstration:
+
+~~~php
+function bg_idle_timeout_seconds(array $seed): int
+{
+    return 90; // 30 seconds before the warning + 60 seconds to respond
+}
+~~~
+
+This is a **temporary local demonstration setting**, not the approved
+instructor seed formula. Restore the default
+`return (5 + ((int) $seed['d1'] % 5)) * 60;` before submitting.
+
+The browser now reads the warning lead from the PHP server and dynamically
+throttles **trusted real user activity** so short demo sessions can still
+renew safely. Mouse movement, clicks, keyboard input, scrolling and touch
+events renew a valid session; leaving the tab untouched never triggers a
+heartbeat. Once the warning is visible, the user must explicitly press
+**Stay Signed In** to dismiss it.
+
+For a 30-second **total** server timeout, the new safeguard instead reduces
+the warning lead to 15 seconds, avoiding an immediate pop-up. You cannot have
+both an entire 30-second session and an additional 60-second warning period.
+
+**If `git pull` refuses to overwrite your locally edited auth.php**, save
+only that temporary edit safely first:
+
+~~~powershell
+git status --short
+git stash push -m "My temporary session demo setting" -- backend/php/auth.php
+git pull origin main
+~~~
+
+Then re-edit `backend/php/auth.php` to `return 90;` if you still want
+the demonstration. Do not `git stash pop` without reviewing the change,
+because it would restore the original 30-second edit.
+
+The seed-specific unit tests expect the official formula and will fail while
+the temporary override is active. Run them with the original formula before
+or after your demo, and **do not change test expectations** just to make the
+demo pass.
+
 ## How it works
 
 1. The existing authenticated session's idle duration remains
