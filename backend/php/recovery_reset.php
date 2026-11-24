@@ -157,9 +157,11 @@ function bg_reset_password(
         $code = $q->fetch();
         $started = (new DateTimeImmutable('@' . $flow['started_at']))
             ->setTimezone(new DateTimeZone('Asia/Manila'))->format('Y-m-d H:i:s');
+        // An OTP is generated *before* the entry session is stamped, so
+        // its creation time can precede started_at; the consumed time must
+        // follow entry, and the bound OTP ID must match exactly.
         if (!$code || (int) $code['id'] !== $flow['reset_otp_id']
             || $code['consumed_at'] === null || $code['cancelled_at'] !== null
-            || $code['created_at'] < $started
             || $code['consumed_at'] < $started) {
             $db->rollBack();
             return $denied;
