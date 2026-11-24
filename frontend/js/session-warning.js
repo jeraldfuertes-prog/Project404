@@ -18,6 +18,15 @@
   let hadClock = false;
   let renewing = false;
   let lastActivityRenewAttempt = performance.now();
+  const idleSeconds = Number(timer.dataset.idleSeconds);
+  const warningSeconds = Number(timer.dataset.warningSeconds);
+  // On short demo sessions the renewal must happen sooner than the
+  // inactivity-to-warning interval; on normal sessions cap requests at 30s.
+  const renewIntervalMs = Math.min(
+    30000,
+    Math.max(2500, Math.floor(((idleSeconds - warningSeconds) * 1000) / 3))
+  );
+  const warningLeadMs = warningSeconds * 1000;
 
   function setDeadline(data) {
     const serverTime = Number(data.server_time);
@@ -101,7 +110,7 @@
       remaining.textContent = '00:00';
       // Status check is read-only and NEVER renews the PHP session.
       void statusCheck();
-    } else if (ms <= 60000) {
+    } else if (ms <= warningLeadMs) {
       showWarning();
       remaining.textContent = formatRemaining(ms);
     } else {
@@ -165,13 +174,14 @@
 
   // Previously only navigation and form POSTs renewed sessions. Genuine
   // pointer, keyboard, scroll and touch activity should also count as use.
-  // Throttle to at most one renewal per 60 seconds, and NEVER use a
-  // background heartbeat: leaving the tab untouched still causes logout.
+  // A genuine interaction triggers renewal at a rate adjusted to the
+  // server's inactivity-to-warning window. No events means NO background
+  // heartbeat: leaving the tab untouched still causes automatic logout.
   function onUserActivity(event) {
     if (!event.isTrusted || document.hidden || shown
         || renewing || submitting || checking) return;
     const now = performance.now();
-    if (now - lastActivityRenewAttempt < 60000) return;
+    if (now - lastActivityRenewAttempt < renewIntervalMs) return;
     if (deadline <= now) {
       void statusCheck();
       return;
@@ -180,7 +190,7 @@
     void renewSession(false);
   }
 
-  for (const eventName of ['pointermove', 'pointerdown', 'keydown', 'wheel', 'touchstart']) {
+  for (const eventName of ['pointermove', 'pointerdown', 'keydown', 'input', 'wheel', 'scroll', 'touchstart']) {
     document.addEventListener(eventName, onUserActivity, { passive: true });
   }
 
@@ -197,10 +207,12 @@
     if (event.persisted) void statusCheck();
   });
 
-  if (!setDeadline({
-    server_time: timer.dataset.serverTime,
-    expires_at: timer.dataset.expiresAt
-  })) {
+  if (!Number.isFinite(idleSeconds) || idleSeconds < 1 ||
+      !Number.isFinite(warningSeconds) || warningSeconds < 0 ||
+      warningSeconds >= idleSeconds || !setDeadline({
+        server_time: timer.dataset.serverTime,
+        expires_at: timer.dataset.expiresAt
+      })) {
     signedOut();
     return;
   }
