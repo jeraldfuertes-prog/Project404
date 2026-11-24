@@ -85,10 +85,12 @@ demo pass.
 
 ### Important semantics
 
-Session inactivity means **time without an authenticated server request**.
-Simply moving the mouse or typing in a non-submitted form does **not**
-extend the server-side session. Only actual authenticated requests (navigation,
-form submissions) and the explicit Stay Signed In action renew it.
+Session inactivity means **time without a genuine user action or
+authenticated server request**. The new JavaScript sends a throttled,
+CSRF-protected POST when the user actually moves the mouse, types, scrolls,
+touches the page or clicks. It does **not** send a timer-driven heartbeat.
+After the warning appears, only **Stay Signed In** or **Log Out** can clear
+the modal; an expired session still cannot be renewed.
 
 Your personal d1 seed value is private and should not be posted.
 
@@ -169,8 +171,10 @@ Screenshot to submit: Login after intentional Log Out.
    http://localhost:8000/session-renew.php as a **normal URL (GET)**
    must **not** renew the session. It returns HTTP 405.
 2. In Chrome DevTools > Network while your dashboard is open, check that
-   session-status.php uses GET and session-renew.php uses POST **only when you
-   explicitly click Stay Signed In**. Never share session cookies or CSRF tokens.
+   session-status.php uses GET, while session-renew.php uses POST when you
+   **actively interact with the page** (throttled) or explicitly click
+   **Stay Signed In**. An idle, untouched page must not send renewal POSTs.
+   Never share session cookies or CSRF tokens.
 3. Switching tabs can cause a **read-only** session-status.php request.
    It must not extend the idle deadline.
 
@@ -190,6 +194,7 @@ The GitHub Actions workflow checks PHP and JavaScript syntax, plus:
 - session_safety_integration_test.php (disposable CI MySQL):
   passive status doesn't renew, explicit authenticated request renews,
   password reset revokes sessions, and expired sessions cannot renew.
+- Node VM regression for 30 seconds idle, real pointer/keyboard renewal, modal timing and expiry.
 - All pre-existing Phase 2–4.4 and billing tests.
 
 If a test fails, report the step and redacted screenshot; do not share
