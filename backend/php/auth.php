@@ -9,10 +9,10 @@ function bg_auth_password_fingerprint(string $passwordHash): string
     return hash('sha256', $passwordHash);
 }
 
-/** Seeded inactivity period used by both server authorization and UI warning. */
+/** Fixed 15-minute inactivity timeout, shared by server auth and the UI. */
 function bg_idle_timeout_seconds(array $seed): int
 {
-    return (5 + ((int) $seed['d1'] % 5)) * 60;
+    return 15 * 60; // 900 seconds; warn with 60 seconds remaining.
 }
 
 /**
