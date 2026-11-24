@@ -7,6 +7,9 @@ bg_secure_start();
 $error = '';
 $notice = (string) ($_SESSION['login_notice'] ?? '');
 unset($_SESSION['login_notice']);
+if (($_GET['session'] ?? null) === 'expired' && $notice === '') {
+    $notice = 'Your session has expired. Please sign in again to continue.';
+}
 $locked = 0;
 try {
     $config = billguard_config();
