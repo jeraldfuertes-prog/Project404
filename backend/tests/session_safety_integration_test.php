@@ -54,7 +54,7 @@ try {
     verify_session((int) $_SESSION['last_activity'] === $first,
         'GET/status check does NOT renew inactivity deadline');
     verify_session(bg_session_remaining_seconds((int) $_SESSION['last_activity'], $seed, time())
-        <= 420, 'Passive status does not add lost inactivity time');
+        <= 780, 'Passive status does not add lost inactivity time');
 
     $renewed = bg_auth_user($db, $seed, true);
     verify_session($renewed !== null && $renewed['id_number'] === $id,
@@ -62,7 +62,7 @@ try {
     verify_session((int) $_SESSION['last_activity'] > $first,
         'Renewal sets new last_activity timestamp');
     verify_session(bg_session_remaining_seconds((int) $_SESSION['last_activity'], $seed, time())
-        >= 539, 'Renewal restores almost full seeded inactivity period');
+        >= 899, 'Renewal restores almost full 15-minute inactivity period');
 
     // Testing protected-page access after a simulated password reset:
     $newHash = password_hash('CI-Only-NewPassword!9', PASSWORD_DEFAULT);
