@@ -663,3 +663,43 @@ strong { color: var(--cp-text); }
 /* Login recovery action is visible without requiring failed sign-in attempts. */
 .login-recovery-action { margin: 14px 0 16px; }
 .login-recovery-action .button { width: 100%; }
+
+
+/* Phase 4.5 — one-minute inactivity warning on protected pages. */
+.session-warning-overlay[hidden] { display: none !important; }
+.session-warning-open { overflow: hidden; }
+.session-warning-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(0, 4, 7, .90);
+  backdrop-filter: blur(8px);
+}
+.session-warning-card {
+  width: min(100%, 490px);
+  padding: clamp(22px, 4vw, 36px);
+  background: #091a1d;
+  border: 1px solid var(--cp-cyan);
+  border-radius: 14px;
+  box-shadow: 0 0 45px rgba(0, 255, 255, .15), inset 0 0 0 1px rgba(0,255,0,.11);
+  color: #e5f7f4;
+}
+.session-warning-card h2 {
+  font-size: clamp(1.25rem, 4vw, 1.7rem);
+  letter-spacing: .065em;
+  color: var(--cp-green);
+  margin: 12px 0 16px;
+}
+.session-warning-card p { line-height: 1.65; }
+#bg-session-remaining { color: var(--cp-cyan); font-variant-numeric: tabular-nums; font-size: 1.25em; }
+.session-warning-card__hint { color: var(--cp-muted); font-size: .85rem; }
+.session-warning-card__actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+.session-warning-card__actions form { flex: 1 1 170px; }
+.session-warning-card__actions .button { width: 100%; min-height: 46px; }
+.session-warning-card__error { color: #f8c1ba; font-size: .85rem; }
+@media (max-width: 420px) {
+  .session-warning-card__actions { flex-direction: column; }
+}
