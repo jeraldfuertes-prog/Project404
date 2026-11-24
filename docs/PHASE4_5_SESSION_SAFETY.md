@@ -4,66 +4,53 @@
 preserves the Phase 3 seeded server-side inactivity timeout. No database
 migration is required.
 
-## 30-second inactivity demonstration (November 24 fix)
+## Session timeout configuration — 15 minutes
 
-The server timeout and the warning lead are **different durations**. If you
-change `bg_idle_timeout_seconds()` to `return 1 * 30;`, you set the **entire
-session** to 30 seconds. With the original 60-second warning lead, the dialog
-appeared immediately. In addition, the former 60-second interaction-POST
-throttle could not renew a 30-second session.
+The repository now uses a **fixed 15-minute (900-second) inactivity timeout**.
+The existing Cyberpunk warning opens with **one minute (60 seconds) remaining**,
+meaning it appears after **14 minutes without activity**. If the user does
+not select **Stay Signed In**, BillGuard signs them out at the 15-minute mark.
 
-**For the requested behavior — work normally; after 30 seconds of no mouse,
-keyboard, scroll or touch activity show the warning; then allow a 60-second
-countdown — use a 90-second total inactivity timeout** for the demonstration:
+The server-side policy is set in `backend/php/auth.php`:
 
 ~~~php
 function bg_idle_timeout_seconds(array $seed): int
 {
-    return 90; // 30 seconds before the warning + 60 seconds to respond
+    return 15 * 60;
 }
 ~~~
 
-This is a **temporary local demonstration setting**, not the approved
-instructor seed formula. Restore the default
-`return (5 + ((int) $seed['d1'] % 5)) * 60;` before submitting.
+The warning lead stays at 60 seconds through
+`bg_session_warning_lead_seconds()`, and the browser reads this policy
+from server-rendered metadata. Real pointer, keyboard, scrolling and touch
+activity renews an authenticated session via throttled CSRF-protected POST
+requests. An untouched page never sends a timer-based heartbeat.
 
-The browser now reads the warning lead from the PHP server and dynamically
-throttles **trusted real user activity** so short demo sessions can still
-renew safely. Mouse movement, clicks, keyboard input, scrolling and touch
-events renew a valid session; leaving the tab untouched never triggers a
-heartbeat. Once the warning is visible, the user must explicitly press
-**Stay Signed In** to dismiss it.
+The old seed formula and 30-second demonstration guidance are superseded by
+this **user-requested 15-minute configuration**. If a class rubric requires
+the original seed-derived 5–9 minutes, discuss the deviation with your
+instructor before submitting.
 
-For a 30-second **total** server timeout, the new safeguard instead reduces
-the warning lead to 15 seconds, avoiding an immediate pop-up. You cannot have
-both an entire 30-second session and an additional 60-second warning period.
-
-**If `git pull` refuses to overwrite your locally edited auth.php**, save
-only that temporary edit safely first:
+If your local `backend/php/auth.php` was previously changed to
+`return 90;` or `return 1 * 30;`, save the temporary local edit before
+pulling:
 
 ~~~powershell
 git status --short
-git stash push -m "My temporary session demo setting" -- backend/php/auth.php
+git stash push -m "Temporary session demo setting" -- backend/php/auth.php
 git pull origin main
 ~~~
 
-Then re-edit `backend/php/auth.php` to `return 90;` if you still want
-the demonstration. Do not `git stash pop` without reviewing the change,
-because it would restore the original 30-second edit.
-
-The seed-specific unit tests expect the official formula and will fail while
-the temporary override is active. Run them with the original formula before
-or after your demo, and **do not change test expectations** just to make the
-demo pass.
+Do not apply that stash afterward, or you will restore the old timeout.
 
 ## How it works
 
 1. The existing authenticated session's idle duration remains
-   **5 + (d1 % 5) minutes**. Do NOT replace with a fixed five-minute timeout.
+   **15 minutes (900 seconds)**, as configured in backend/php/auth.php.
 2. All authenticated pages using the shared BillGuard dashboard layout
    (Dashboard / Utility Bills / Payments / Reminders / My Profile) include a
    Cyberpunk warning dialog. It first appears when **60 seconds remain**
-   until the server-side inactivity deadline.
+   until the server-side inactivity deadline (after 14 minutes idle).
 3. The dialog shows a countdown and two actions: **Log Out** or
    **Stay Signed In**. Keyboard focus is placed on the renewal action.
 4. **Stay Signed In** sends an explicit, same-origin, CSRF-verified POST
@@ -85,14 +72,14 @@ demo pass.
 
 ### Important semantics
 
-Session inactivity means **time without a genuine user action or
-authenticated server request**. The new JavaScript sends a throttled,
+Session inactivity is tracked by **authenticated server requests and
+throttled user-activity renewals**. The new JavaScript sends a throttled,
 CSRF-protected POST when the user actually moves the mouse, types, scrolls,
 touches the page or clicks. It does **not** send a timer-driven heartbeat.
 After the warning appears, only **Stay Signed In** or **Log Out** can clear
 the modal; an expired session still cannot be renewed.
 
-Your personal d1 seed value is private and should not be posted.
+The timeout is now fixed at 15 minutes and does not depend on the personal seed.
 
 ## Windows setup
 
@@ -126,10 +113,10 @@ Use a registered test account and normal login email OTP.
 
 1. Visit http://localhost:8000/login.php, sign in and complete login OTP.
 2. Leave the dashboard **untouched** (no navigation, reload, or form submit).
-3. Wait until the last minute before the **seeded** timeout:
-   the original server idle period is 5–9 minutes based on your approved d1.
-4. Expect the dark Cyberpunk **SESSION EXPIRING SOON** dialog to appear at
-   about **01:00**. The visible timer should count down.
+3. Wait until the last minute before the **15-minute** timeout:
+   the dialog should appear after approximately 14 minutes without activity.
+4. Expect the dark Cyberpunk **SESSION EXPIRING SOON** dialog at
+   **01:00 remaining**. The visible timer should count down.
 
 Screenshot to submit: the dashboard with the warning dialog and countdown,
 with account information redacted.
@@ -140,8 +127,8 @@ with account information redacted.
 2. Expect the dialog to close. The browser should remain on the dashboard.
 3. Stay on the page past the **original** expiry time.
 4. Expect the dashboard to remain valid; the renewed session uses a new
-   full seeded inactivity period. The warning should reappear in the
-   final minute of the **new** deadline.
+   15-minute inactivity period. The warning should reappear after 14 minutes
+   of inactivity, with **01:00** remaining.
 
 Screenshot to submit: normal dashboard after clicking Stay Signed In.
 
