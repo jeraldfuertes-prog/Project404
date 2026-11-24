@@ -74,6 +74,13 @@ function bg_app_idle_seconds(): int
     return $seed === null ? 0 : bg_idle_timeout_seconds($seed);
 }
 
+/** Share the server's short-session-safe warning threshold with JavaScript. */
+function bg_app_warning_lead_seconds(): int
+{
+    $seed = bg_seed(billguard_config());
+    return $seed === null ? 0 : bg_session_warning_lead_seconds($seed);
+}
+
 function bg_app_end(): void
 {
     ?>
@@ -83,6 +90,8 @@ function bg_app_end(): void
         id="bg-session-timer"
         data-server-time="<?= (int) time() ?>"
         data-expires-at="<?= (int) ($_SESSION['last_activity'] ?? 0) + bg_app_idle_seconds() ?>"
+        data-idle-seconds="<?= (int) bg_app_idle_seconds() ?>"
+        data-warning-seconds="<?= (int) bg_app_warning_lead_seconds() ?>"
         hidden
     ></div>
     <section class="session-warning-overlay" id="bg-session-warning" role="dialog"
