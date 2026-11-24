@@ -114,6 +114,19 @@ async function flush() {
 }
 
 async function main() {
+  const fifteen = harness(900, 60);
+  assert.equal(fifteen.visible, false, '15-minute session starts without a warning');
+  fifteen.advance(839000);
+  assert.equal(fifteen.visible, false, 'Warning hidden before 14 minutes');
+  fifteen.advance(1000);
+  assert.equal(fifteen.visible, true, 'Warning appears after 14 minutes inactivity');
+  assert.equal(fifteen.remaining, '01:00', '15-minute session has one-minute warning');
+  assert.equal(fifteen.posts, 0, 'Passive countdown never renews session');
+  fifteen.advance(60000);
+  await flush();
+  assert.equal(fifteen.redirect, 'login.php?session=expired',
+    '15-minute inactivity expires session and redirects');
+
   const idle = harness();
   assert.equal(idle.visible, false, 'Warning hidden when authenticated');
   idle.advance(29000);
