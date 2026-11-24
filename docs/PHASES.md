@@ -76,14 +76,14 @@ This roadmap follows the IT 107 **Security1 Student Handout**. **Scope change (N
 
 **Goal:** Finish Checkpoint 3.
 
-**Updated email-first recovery flow:** Users enter their registered **email** plus CAPTCHA, which triggers a six-digit reset-purpose OTP for eligible accounts. The next page shows the **three registered security questions** and asks for the emailed code plus one chosen question answer. Both must match for a short-lived server-side identity-verification state. Public results do not disclose which email exists or which answer was correct. No password modification is enabled until Phase 4.4. See [Current email-first recovery guide](EMAIL_FIRST_RECOVERY.md).
+**Updated email-first recovery flow:** Users enter their registered **email** plus CAPTCHA, which triggers a six-digit reset-purpose OTP for eligible accounts. The next page shows the **three registered security questions** and asks for the emailed code plus one chosen question answer. Both must match for the user to reset a password through the protected Change Password form. The reset rechecks the consumed OTP, verifies seed-based strength, rejects the current and last three previous passwords, and invalidates prior authenticated sessions and login OTPs. No schema migration is needed; previous password hashes are stored in password_history. Public recovery messages do not disclose whether an email exists or answers were correct. See [Current recovery guide](EMAIL_FIRST_RECOVERY.md) and [Phase 4.4 tests](PHASE4_4_PASSWORD_RESET_TESTING.md).
 
 - [x] Phase 4.1 — Registered email + CAPTCHA with generic confirmation, IP/lockout protection, and throttled direct recovery-code email.
 - [x] Phase 4.2 — Show three original registration questions and securely verify one answer against the stored hash.
 - [x] Phase 4.3 — Verify expiring, hashed, single-use recovery email OTP together with the security answer; account lockout and resend limits enforced.
-- [ ] Phase 4.4 — Secure Change Password only after both proofs, enforce strength/history and notify owner.
-- [ ] Phase 4.5 — Idle session warning, renewal, and revoke older authenticated sessions after password change.
-- [ ] Phase 4.6 — Complete local browser and real-email delivery testing (automated GitHub CI tests passed).
+- [x] Phase 4.4 — Change Password with bound two-proof authorization, seeded password strength, history of current and last three passwords, confirmation email, and old-session/OTP revocation. **Code committed; automated GitHub tests passed. Local Chrome test pending.**
+- [ ] Phase 4.5 — One-minute idle-expiry warning and secure session renewal. The server-side idle timeout and password-reset session revocation are already implemented.
+- [ ] Phase 4.6 — Complete local browser and real-email delivery testing.
 
 **Checkpoint 3:** Login + OTP, lockout, owner alerts, Forgot/Change Password, and logging.
 
