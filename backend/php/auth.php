@@ -3,6 +3,12 @@ declare(strict_types=1);
 require_once __DIR__ . '/security.php';
 require_once __DIR__ . '/otp.php';
 
+/** Hash of the stored password hash is the session version; password reset revokes old sessions. */
+function bg_auth_password_fingerprint(string $passwordHash): string
+{
+    return hash('sha256', $passwordHash);
+}
+
 /** Authentication and access helpers: never grant a session before login OTP. */
 function bg_auth_user(PDO $db, array $seed): ?array
 {
@@ -16,14 +22,17 @@ function bg_auth_user(PDO $db, array $seed): ?array
         bg_sign_out();
         return null;
     }
-    $query = $db->prepare("SELECT id_number, first_name, family_name, email, role FROM users
+    $query = $db->prepare("SELECT id_number, first_name, family_name, email, role, password_hash FROM users
         WHERE id_number = :id AND account_status = 'active' AND email_verified_at IS NOT NULL LIMIT 1");
     $query->execute([':id' => $id]);
     $user = $query->fetch();
-    if (!$user) {
+    $fingerprint = $_SESSION['auth_password_fingerprint'] ?? null;
+    if (!$user || !is_string($fingerprint)
+        || !hash_equals(bg_auth_password_fingerprint((string) $user['password_hash']), $fingerprint)) {
         bg_sign_out();
         return null;
     }
+    unset($user['password_hash']);
     $_SESSION['last_activity'] = time();
     return $user;
 }
