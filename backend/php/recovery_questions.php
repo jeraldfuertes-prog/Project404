@@ -7,8 +7,8 @@ require_once __DIR__ . '/recovery.php';
  * Neither this module nor OTP verification changes the account password.
  */
 const BG_RECOVERY_QUESTION_NOTICE = 'Your recovery verification has been submitted. '
-    . 'If both the email code and your security answer matched, identity checks are complete. '
-    . 'No password has been changed; that step will be enabled in Phase 4.4.';
+    . 'If both the email code and your security answer matched, you may continue to Change Password. '
+    . 'No password has been changed yet.';
 
 /** The three questions selected using the enrollment seed. */
 function bg_recovery_question_choices(array $seed): array

@@ -17,7 +17,7 @@ $checks = [
     'Retry second alert after threshold if SMTP was unavailable' => bg_login_alert_tier(7) === 2,
     'Retry third alert after threshold if SMTP was unavailable' => bg_login_alert_tier(10) === 3,
     'Remain in tier three after nine' => bg_login_lockout(10, $seed) === [3, 76],
-    'Idle timeout seeded minutes' => (5 + ($seed['d1'] % 5)) === 9,
+    'Session inactivity timeout is 15 minutes' => bg_idle_timeout_seconds($seed) === 900,
     'IP failure threshold seeded' => (8 + $seed['d2']) === 15,
 ];
 $bad = 0;

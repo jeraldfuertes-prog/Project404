@@ -9,10 +9,28 @@ function bg_auth_password_fingerprint(string $passwordHash): string
     return hash('sha256', $passwordHash);
 }
 
-/** Seeded inactivity period used by both server authorization and UI warning. */
+/** Fixed 15-minute inactivity timeout, shared by server auth and the UI. */
 function bg_idle_timeout_seconds(array $seed): int
 {
-    return 30;
+    return 15 * 60; // 900 seconds; warn with 60 seconds remaining.
+}
+
+/**
+ * Warn at most one minute before expiry, but never on page load for a
+ * temporarily shortened demonstration timeout. Reserve at least 15 seconds
+ * of actual inactivity before showing the warning.
+ *
+ * For a 30-second inactivity demonstration + 60-second warning, set the
+ * total server idle timeout to 90 seconds (30 + 60), not 30 seconds.
+ */
+function bg_session_warning_lead_for_idle_seconds(int $idle): int
+{
+    return min(60, max(0, $idle - 15));
+}
+
+function bg_session_warning_lead_seconds(array $seed): int
+{
+    return bg_session_warning_lead_for_idle_seconds(bg_idle_timeout_seconds($seed));
 }
 
 /** Remaining inactivity time. A missing/expired activity marker has no grace. */
