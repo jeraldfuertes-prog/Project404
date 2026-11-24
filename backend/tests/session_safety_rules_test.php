@@ -21,6 +21,16 @@ session_rule(bg_idle_timeout_seconds(['d1' => 0]) === 300,
     'Smallest seeded inactivity timeout is 5 minutes');
 session_rule(bg_idle_timeout_seconds(['d1' => 8]) === 480,
     'Seeded timeout correctly wraps d1 modulo five');
+session_rule(bg_session_warning_lead_for_idle_seconds(30) === 15,
+    '30-second total timeout warns after 15 seconds instead of immediately');
+session_rule(bg_session_warning_lead_for_idle_seconds(90) === 60,
+    '90-second total timeout warns after 30 seconds of inactivity');
+session_rule(bg_session_warning_lead_for_idle_seconds(300) === 60,
+    'Normal seeded timeout retains one-minute warning');
+session_rule(bg_session_warning_lead_for_idle_seconds(10) === 0,
+    'Too-short sessions do not show an immediate warning');
+session_rule(bg_session_warning_lead_seconds($seed) === 60,
+    'Current seeded session displays a one-minute warning');
 session_rule(bg_session_remaining_seconds(1000, $seed, 1000) === 540,
     'New authenticated activity gives full idle window');
 session_rule(bg_session_remaining_seconds(1000, $seed, 1479) === 61,
