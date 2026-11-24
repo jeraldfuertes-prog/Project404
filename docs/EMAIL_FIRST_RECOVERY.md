@@ -1,5 +1,7 @@
 # BillGuard — Email-First Forgot Password and Security Questions
 
+> **Phase 4.4 update (November 24, 2026):** A protected [Change Password form](PHASE4_4_PASSWORD_RESET_TESTING.md) is now implemented after email-code and security-question verification. It enforces the original seeded password strength and last-three password history, invalidates older authenticated sessions, and sends a change notification. Later references below saying password changes are not enabled describe the earlier 4.3 stage and are superseded by the new test guide.
+
 ## Current implementation
 
 **Scope:** Email-first recovery entry, six-digit reset email OTP, and verification of one of the three registered security questions. **Changing passwords is not enabled yet**; that remains Phase 4.4.
