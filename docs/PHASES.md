@@ -82,7 +82,7 @@ This roadmap follows the IT 107 **Security1 Student Handout**. **Scope change (N
 - [x] Phase 4.2 — Show three original registration questions and securely verify one answer against the stored hash.
 - [x] Phase 4.3 — Verify expiring, hashed, single-use recovery email OTP together with the security answer; account lockout and resend limits enforced.
 - [x] Phase 4.4 — Change Password with bound two-proof authorization, seeded password strength, history of current and last three passwords, confirmation email, and old-session/OTP revocation. **COMPLETED — 5/5 owner-reported local checks passed on November 24, 2026, and GitHub automated tests passed** (including password-history and replay/lockout checks). Local delivery of the password-change notification and a separate three-previous-password browser cycle remain optional follow-up checks.
-- [ ] Phase 4.5 — One-minute idle-expiry warning and secure session renewal. The server-side idle timeout and password-reset session revocation are already implemented.
+- [x] Phase 4.5 — One-minute idle-expiry warning, deliberate CSRF-protected **Stay Signed In**, non-renewing status checks, automatic redirect after server expiry, and password-reset session revocation. **Code implemented and GitHub automated tests passed; local Chrome verification pending.** See [Phase 4.5 session safety testing](PHASE4_5_SESSION_SAFETY.md).
 - [ ] Phase 4.6 — Complete local browser and real-email delivery testing.
 
 **Checkpoint 3:** Login + OTP, lockout, owner alerts, Forgot/Change Password, and logging.
