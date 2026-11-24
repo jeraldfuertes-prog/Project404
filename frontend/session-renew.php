@@ -21,8 +21,9 @@ try {
     $seed = bg_seed($config);
     if ($seed === null) throw new RuntimeException('Seed configuration missing.');
     $db = billguard_db();
-    // Only a deliberate CSRF-checked POST can renew. The existing auth
-    // check rejects idle expiry and password-reset-revoked sessions first.
+    // Only CSRF-checked POSTs initiated by genuine browser interaction
+    // or the Stay Signed In button renew. Passive checks never renew.
+    // Reject idle-expired and password-reset-revoked sessions first.
     $user = bg_auth_user($db, $seed, true);
     if ($user === null) {
         http_response_code(401);
