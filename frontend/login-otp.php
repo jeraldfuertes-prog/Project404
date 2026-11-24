@@ -12,7 +12,8 @@ if (!is_string($id) || !preg_match('/^\d{4}-\d{4}$/D', $id)
         $_SESSION['login_notice'] = 'Your verification session expired. Please sign in again.';
     }
     unset($_SESSION['login_pending_id'], $_SESSION['login_pending_at'],
-        $_SESSION['login_message'], $_SESSION['login_send_error']);
+        $_SESSION['login_message'], $_SESSION['login_send_error'],
+        $_SESSION['login_pending_password_fingerprint']);
     header('Location: login.php', true, 303);
     exit;
 }
@@ -29,10 +30,11 @@ try {
     if ($seed === null) throw new RuntimeException('Seed not configured');
     $expiry = $seed['otp_expiry'];
     $db = billguard_db();
-    $query = $db->prepare("SELECT email FROM users WHERE id_number = :id
+    $query = $db->prepare("SELECT email, password_hash FROM users WHERE id_number = :id
         AND account_status = 'active' AND email_verified_at IS NOT NULL LIMIT 1");
     $query->execute([':id' => $id]);
-    $email = $query->fetchColumn();
+    $pendingUser = $query->fetch();
+    $email = $pendingUser['email'] ?? null;
     if (!$email) {
         unset($_SESSION['login_pending_id']);
         header('Location: login.php', true, 303);
@@ -50,10 +52,29 @@ try {
             $code = is_string($_POST['otp'] ?? null) ? trim($_POST['otp']) : '';
             $result = bg_verify_login_otp($db, $id, $code);
             if ($result['ok']) {
+                // Password resets invalidate any login OTP session created
+                // under an older password, even if the code itself was valid.
+                $fresh = $db->prepare("SELECT password_hash FROM users
+                    WHERE id_number = :id AND account_status = 'active'
+                      AND email_verified_at IS NOT NULL LIMIT 1");
+                $fresh->execute([':id' => $id]);
+                $currentHash = $fresh->fetchColumn();
+                $pendingHashVersion = $_SESSION['login_pending_password_fingerprint'] ?? null;
+                if (!is_string($currentHash) || !is_string($pendingHashVersion)
+                    || !hash_equals(bg_auth_password_fingerprint($currentHash), $pendingHashVersion)) {
+                    unset($_SESSION['login_pending_id'], $_SESSION['login_pending_at'],
+                        $_SESSION['login_pending_password_fingerprint'],
+                        $_SESSION['login_message'], $_SESSION['login_send_error']);
+                    $_SESSION['login_notice'] = 'Your login verification expired. Sign in again.';
+                    header('Location: login.php', true, 303);
+                    exit;
+                }
                 unset($_SESSION['login_pending_id'], $_SESSION['login_pending_at'],
+                    $_SESSION['login_pending_password_fingerprint'],
                     $_SESSION['login_message'], $_SESSION['login_send_error']);
                 session_regenerate_id(true);
                 $_SESSION['user_id'] = $id;
+                $_SESSION['auth_password_fingerprint'] = bg_auth_password_fingerprint($currentHash);
                 $_SESSION['authenticated_at'] = time();
                 $_SESSION['last_activity'] = time();
                 header('Location: dashboard.php', true, 303);
