@@ -15,6 +15,20 @@ function bg_idle_timeout_seconds(array $seed): int
     return (5 + ((int) $seed['d1'] % 5)) * 60;
 }
 
+/**
+ * Warn at most one minute before expiry, but never on page load for a
+ * temporarily shortened demonstration timeout. Reserve at least 15 seconds
+ * of actual inactivity before showing the warning.
+ *
+ * For a 30-second inactivity demonstration + 60-second warning, set the
+ * total server idle timeout to 90 seconds (30 + 60), not 30 seconds.
+ */
+function bg_session_warning_lead_seconds(array $seed): int
+{
+    $idle = bg_idle_timeout_seconds($seed);
+    return min(60, max(0, $idle - 15));
+}
+
 /** Remaining inactivity time. A missing/expired activity marker has no grace. */
 function bg_session_remaining_seconds(int $lastActivity, array $seed, int $now): int
 {
