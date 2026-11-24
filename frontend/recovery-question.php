@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 require_once dirname(__DIR__) . '/backend/php/recovery_code.php';
+require_once dirname(__DIR__) . '/backend/php/recovery_reset.php';
 require_once dirname(__DIR__) . '/backend/php/recovery_email.php';
 require_once dirname(__DIR__) . '/backend/php/layout.php';
 bg_secure_start();
@@ -76,9 +77,16 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                 // security answer did not match; no reset action is enabled.
                 $codeVerified = $result['verified']
                     && bg_recovery_verify_code($db, $flow, $resetCode);
-                $flow['stage'] = $codeVerified
+                $proof = $codeVerified && is_string($flow['candidate_id'] ?? null)
+                    ? bg_reset_create_proof($db, $flow['candidate_id']) : null;
+                $flow['stage'] = $proof !== null
                     ? 'identity_verified' : 'identity_submitted';
-                if ($codeVerified) $flow['identity_verified_at'] = time();
+                if ($proof !== null) {
+                    $flow['identity_verified_at'] = time();
+                    $flow['reset_otp_id'] = $proof['reset_otp_id'];
+                    $flow['password_fingerprint'] = $proof['password_fingerprint'];
+                    session_regenerate_id(true);
+                }
                 $_SESSION['bg_recovery_flow'] = $flow;
                 $_SESSION['bg_recovery_question_notice'] = $result['message'];
                 header('Location: recovery-question.php', true, 303);
@@ -106,8 +114,16 @@ bg_page_start('Security Question', 'recovery-question');
             <div class="notice notice--cyan" role="status"><?= bg_safe($notice) ?></div>
         <?php endif; ?>
         <?php if ($complete): ?>
-            <p class="form-hint">Your verification request is complete. Both proofs are required before
-                a password can be changed. The password-change form is not enabled yet.</p>
+            <p class="form-hint">Your verification request was submitted.
+                Both the emailed code and the registered security answer must match
+                before BillGuard can save a new password.</p>
+            <a class="button button--full" href="change-password.php">
+                Continue to Change Password
+            </a>
+            <p class="form-hint">
+                Only sessions with a valid emailed code and correct security answer
+                can save a new password. Otherwise, recovery must be restarted.
+            </p>
             <a class="button button--ghost button--full" href="forgot-password.php">
                 Start Another Recovery Request
             </a>
@@ -173,7 +189,8 @@ bg_page_start('Security Question', 'recovery-question');
             </p>
         <?php endif; ?>
         <p class="form-hint">
-            No password changes or dashboard login are available from this page yet.
+            This recovery step does not log you in. After a successful password change,
+            sign in normally using your username, new password and login OTP.
         </p>
         <p class="simple-auth__links">
             <a href="forgot-password.php">Back to Recovery</a>
