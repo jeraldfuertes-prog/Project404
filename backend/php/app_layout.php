@@ -65,12 +65,57 @@ function bg_app_start(string $title, string $active, array $user): void
     <?php
 }
 
+/** Match server authentication's seeded idle timeout for UI metadata. */
+function bg_app_idle_seconds(): int
+{
+    $config = billguard_config();
+    $seed = bg_seed($config);
+    return $seed === null ? 0 : bg_idle_timeout_seconds($seed);
+}
+
 function bg_app_end(): void
 {
     ?>
         </div>
     </div>
+    <div
+        id="bg-session-timer"
+        data-server-time="<?= (int) time() ?>"
+        data-expires-at="<?= (int) ($_SESSION['last_activity'] ?? 0) + bg_app_idle_seconds() ?>"
+        hidden
+    ></div>
+    <section class="session-warning-overlay" id="bg-session-warning" role="dialog"
+             aria-modal="true" aria-labelledby="bg-session-warning-title"
+             aria-describedby="bg-session-warning-description" hidden>
+        <div class="session-warning-card" tabindex="-1">
+            <p class="eyebrow">BillGuard // Session Safety</p>
+            <h2 id="bg-session-warning-title">SESSION EXPIRING SOON</h2>
+            <p id="bg-session-warning-description">
+                You have been inactive. Your account session expires in
+                <strong id="bg-session-remaining">01:00</strong>.
+            </p>
+            <p class="session-warning-card__hint">
+                For your security, you will be signed out automatically unless
+                you choose to stay signed in.
+            </p>
+            <p class="session-warning-card__error" id="bg-session-error"
+               role="alert" hidden></p>
+            <div class="session-warning-card__actions">
+                <form action="logout.php" method="post">
+                    <?= bg_csrf_field() ?>
+                    <button class="button button--ghost" type="submit">Log Out</button>
+                </form>
+                <form action="session-renew.php" method="post" id="bg-session-renew-form">
+                    <?= bg_csrf_field() ?>
+                    <button class="button" id="bg-stay-signed-in" type="submit">
+                        Stay Signed In
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
     <script src="js/dashboard-nav.js" defer></script>
+    <script src="js/session-warning.js" defer></script>
     <?php
     bg_page_end();
 }
