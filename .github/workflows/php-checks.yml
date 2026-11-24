@@ -40,6 +40,8 @@ jobs:
         run: php backend/tests/recovery_email_rules_test.php
       - name: Validate Phase 4.4 password strength, proof binding and last-three history
         run: php backend/tests/recovery_reset_rules_test.php
+      - name: Validate Phase 4.5 seeded idle session and CSRF rules
+        run: php backend/tests/session_safety_rules_test.php
 
 
   billing-integration:
@@ -97,3 +99,8 @@ jobs:
           BG_TEST_DB_PASS: billing_ci_test_only
           BG_RECOVERY_RESET_CI: yes
         run: php backend/tests/recovery_reset_integration_test.php
+      - name: Validate Phase 4.5 passive status renewal and idle expiry using isolated MySQL
+        env:
+          BG_TEST_DB_PASS: billing_ci_test_only
+          BG_SESSION_SAFETY_CI: yes
+        run: php backend/tests/session_safety_integration_test.php
