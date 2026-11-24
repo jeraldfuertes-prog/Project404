@@ -24,6 +24,8 @@ jobs:
         run: find frontend backend -type f -name '*.php' -print0 | xargs -0 -n1 php -l
       - name: Check browser JavaScript syntax
         run: find frontend/js -type f -name '*.js' -print0 | xargs -0 -n1 node --check
+      - name: Validate 30-second inactivity warning and genuine activity renewal
+        run: node backend/tests/session_warning_browser_test.js
       - name: Validate Phase 2 server-side rules
         run: php backend/tests/phase2_rules_test.php
       - name: Validate billing money, payment and due-date rules

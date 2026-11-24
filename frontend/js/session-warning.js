@@ -1,4 +1,4 @@
-/* BillGuard Phase 4.5 — No background renewal; only deliberate "Stay Signed In". */
+/* BillGuard Phase 4.5 — Renew on genuine user interaction, never on idle timers. */
 (() => {
   'use strict';
   const timer = document.getElementById('bg-session-timer');
@@ -16,6 +16,17 @@
   let focusBeforeWarning = null;
   let deadline = 0;
   let hadClock = false;
+  let renewing = false;
+  let lastActivityRenewAttempt = performance.now();
+  const idleSeconds = Number(timer.dataset.idleSeconds);
+  const warningSeconds = Number(timer.dataset.warningSeconds);
+  // On short demo sessions the renewal must happen sooner than the
+  // inactivity-to-warning interval; on normal sessions cap requests at 30s.
+  const renewIntervalMs = Math.min(
+    30000,
+    Math.max(2500, Math.floor(((idleSeconds - warningSeconds) * 1000) / 3))
+  );
+  const warningLeadMs = warningSeconds * 1000;
 
   function setDeadline(data) {
     const serverTime = Number(data.server_time);
@@ -92,14 +103,14 @@
   }
 
   function tick() {
-    if (!hadClock || submitting || checking) return;
+    if (!hadClock || submitting || checking || renewing) return;
     const ms = deadline - performance.now();
     if (ms <= 0) {
       showWarning();
       remaining.textContent = '00:00';
       // Status check is read-only and NEVER renews the PHP session.
       void statusCheck();
-    } else if (ms <= 60000) {
+    } else if (ms <= warningLeadMs) {
       showWarning();
       remaining.textContent = formatRemaining(ms);
     } else {
@@ -120,13 +131,17 @@
     }
   }
 
-  renewal.addEventListener('submit', async event => {
-    event.preventDefault();
-    if (submitting) return;
-    submitting = true;
-    stay.disabled = true;
-    error.hidden = true;
-    error.textContent = '';
+  async function renewSession(interactive) {
+    if (renewing || submitting || checking) return;
+    // Only a valid server response can extend the countdown. An expired or
+    // password-reset-revoked session always fails on session-renew.php.
+    renewing = true;
+    submitting = interactive;
+    if (interactive) {
+      stay.disabled = true;
+      error.hidden = true;
+      error.textContent = '';
+    }
     try {
       const response = await fetch(renewal.action, {
         method: 'POST', cache: 'no-store', credentials: 'same-origin',
@@ -137,19 +152,51 @@
         signedOut();
         return;
       }
-      if (!response.ok) throw new Error('Renewal failed');
+      if (!response.ok) throw new Error('Session renewal failed');
       const data = await response.json();
-      if (!data.ok || !setDeadline(data)) throw new Error('Renewal failed');
+      if (!data.ok || !setDeadline(data)) throw new Error('Invalid renewal response');
+      lastActivityRenewAttempt = performance.now();
       hideWarning();
     } catch {
-      // Never claim that a session was extended if the server did not confirm.
-      error.textContent = 'Session renewal was not confirmed. Please sign in again.';
-      error.hidden = false;
-      signedOut();
+      // An intermittent network error must not be treated as successful
+      // renewal. Keep the server's original expiry and show the warning.
+      if (interactive) {
+        error.textContent = 'Session renewal was not confirmed. Please sign in again.';
+        error.hidden = false;
+        signedOut();
+      }
     } finally {
-      stay.disabled = false;
+      renewing = false;
       submitting = false;
+      stay.disabled = false;
     }
+  }
+
+  // Previously only navigation and form POSTs renewed sessions. Genuine
+  // pointer, keyboard, scroll and touch activity should also count as use.
+  // A genuine interaction triggers renewal at a rate adjusted to the
+  // server's inactivity-to-warning window. No events means NO background
+  // heartbeat: leaving the tab untouched still causes automatic logout.
+  function onUserActivity(event) {
+    if (!event.isTrusted || document.hidden || shown
+        || renewing || submitting || checking) return;
+    const now = performance.now();
+    if (now - lastActivityRenewAttempt < renewIntervalMs) return;
+    if (deadline <= now) {
+      void statusCheck();
+      return;
+    }
+    lastActivityRenewAttempt = now;
+    void renewSession(false);
+  }
+
+  for (const eventName of ['pointermove', 'pointerdown', 'keydown', 'input', 'wheel', 'scroll', 'touchstart']) {
+    document.addEventListener(eventName, onUserActivity, { passive: true });
+  }
+
+  renewal.addEventListener('submit', event => {
+    event.preventDefault();
+    void renewSession(true);
   });
 
   document.addEventListener('keydown', trapFocus);
@@ -160,10 +207,12 @@
     if (event.persisted) void statusCheck();
   });
 
-  if (!setDeadline({
-    server_time: timer.dataset.serverTime,
-    expires_at: timer.dataset.expiresAt
-  })) {
+  if (!Number.isFinite(idleSeconds) || idleSeconds < 1 ||
+      !Number.isFinite(warningSeconds) || warningSeconds < 0 ||
+      warningSeconds >= idleSeconds || !setDeadline({
+        server_time: timer.dataset.serverTime,
+        expires_at: timer.dataset.expiresAt
+      })) {
     signedOut();
     return;
   }
