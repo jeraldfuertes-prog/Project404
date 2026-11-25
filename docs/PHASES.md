@@ -103,7 +103,7 @@ This roadmap follows the IT 107 **Security1 Student Handout**. **Scope change (N
 10. [ ] Generic user-facing errors; private server error log outside web root.
 11. [ ] Keep DB/SMTP/CAPTCHA/encryption secrets outside web root and Git history.
 12. [ ] Apply `X-Frame-Options: DENY` and `X-Content-Type-Options: nosniff` on every page.
-13. [x] Encrypt Utility Account Number at rest using AES-256-GCM with a fresh random IV and authenticated tag; allow only the signed-in account owner to save/reveal/remove it through My Profile. **Implemented in code; CI and local browser/DB verification required before final sign-off.** See [Protection 13 Windows tests](PROTECTION13_ENCRYPTION_TESTING.md).
+13. [x] Encrypt Utility Account Number at rest using AES-256-GCM with a fresh random IV and authenticated tag; allow only the signed-in account owner to save/reveal/remove it through My Profile. **COMPLETED — GitHub rule/MySQL tests passed; owner-confirmed local database ciphertext (12-byte IV, 16-byte tag), successful owner reveal, denied access after logout, and denied cross-account access on November 25, 2026.** See [Protection 13 Windows tests](PROTECTION13_ENCRYPTION_TESTING.md).
 
 **Deliverable:** Manual tests showing each mandatory protection works.
 
