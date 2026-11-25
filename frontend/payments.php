@@ -25,6 +25,12 @@ if ($ready && ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
     foreach (['amount', 'paid_on', 'note'] as $name) $values[$name] = bg_form_input($_POST, $name);
     if (!bg_check_csrf($_POST['csrf_token'] ?? null)) {
         http_response_code(403);
+        try {
+            bg_log($db, 'CSRF_REJECTED', null, (string) $user['id_number'],
+                ['page' => 'payments']);
+        } catch (Throwable $e) {
+            error_log('BillGuard: payments CSRF activity audit failed.');
+        }
         $message = 'Your request token expired. Refresh the page and retry.';
     } else {
         $result = bg_record_payment($db, $user['id_number'], $selectedBill, $_POST);
