@@ -44,7 +44,7 @@ bg_page_start('Home', 'home');
             <div class="hud__row"><span>Internet</span><strong>₱1,900.00</strong></div>
             <div class="hud__row"><span>Account security</span><strong class="hud__paid">PLANNED</strong></div>
         </div>
-        <div class="hud__bottom">DISPLAY MODE: <span>DEMO DATA / NOT A LIVE ACCOUNT</span></div>
+       
     </div>
 </section>
 
@@ -56,19 +56,19 @@ bg_page_start('Home', 'home');
     </div>
     <div class="features">
         <article class="card feature">
-            <span class="feature__index">MODULE_01</span>
+            
             <span class="feature__icon" aria-hidden="true">▤</span>
             <h3>Utility Bills</h3>
             <p>Add electricity, water and internet bills, amounts, due dates and payment status.</p>
         </article>
         <article class="card feature">
-            <span class="feature__index">MODULE_02</span>
+            
             <span class="feature__icon" aria-hidden="true">₱</span>
             <h3>Payment History</h3>
             <p>Record payments and review monthly household utility spending.</p>
         </article>
         <article class="card feature">
-            <span class="feature__index">MODULE_03</span>
+            
             <span class="feature__icon" aria-hidden="true">⌁</span>
             <h3>Account Security</h3>
             <p>Planned OTP verification, CAPTCHA, secure sessions, activity logs and admin monitoring.</p>
