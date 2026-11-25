@@ -17,6 +17,11 @@ function bg_app_start(string $title, string $active, array $user): void
         ['reminders', 'Reminders', 'reminders.php', '◷'],
         ['profile', 'My Profile', 'profile.php', '◉'],
     ];
+    // Display admin-only navigation only for a server-authenticated admin.
+    // The page and JSON feed independently recheck permissions on every visit.
+    if (($user['role'] ?? null) === 'admin') {
+        $menu[] = ['security', 'Security Activity', 'admin-security.php', '◆'];
+    }
     ?>
     <div class="app-shell" id="app-shell">
         <button type="button" class="app-scrim" data-close-sidebar
