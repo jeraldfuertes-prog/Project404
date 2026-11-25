@@ -85,6 +85,11 @@ jobs:
           BG_TEST_DB_PASS: billing_ci_test_only
           BG_UTILITY_ENCRYPTION_CI: yes
         run: php backend/tests/utility_account_integration_test.php
+      - name: Validate Protection 9 admin-access success/denial events in isolated MySQL
+        env:
+          BG_TEST_DB_PASS: billing_ci_test_only
+          BG_ADMIN_AUDIT_CI: yes
+        run: php backend/tests/admin_activity_integration_test.php
       - name: Validate Phase 3 login OTP lockouts alerts and IP blocking in MySQL
         env:
           BG_TEST_DB_PASS: billing_ci_test_only
