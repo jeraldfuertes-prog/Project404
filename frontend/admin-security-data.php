@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-require_once dirname(__DIR__) . '/backend/php/admin_audit.php';
+require_once dirname(__DIR__) . '/backend/php/admin_monitor_data.php';
 bg_secure_start();
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: private, no-store, max-age=0');
@@ -21,11 +21,16 @@ try {
         echo json_encode(['ok' => false]);
         exit;
     }
-    $events = bg_admin_audit_latest($db);
+    $filters = bg_monitor_filters($_GET);
+    $data = bg_monitor_dashboard_data($db, $filters);
     bg_admin_audit_viewed($db, $admin, 'feed');
-    echo json_encode(['ok' => true, 'events' => $events], JSON_THROW_ON_ERROR);
+    echo json_encode(['ok' => true] + $data,
+        JSON_THROW_ON_ERROR | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+} catch (InvalidArgumentException $e) {
+    http_response_code(400);
+    echo json_encode(['ok' => false, 'error' => 'Invalid filters.']);
 } catch (Throwable $e) {
-    error_log('BillGuard: admin security event feed unavailable.');
+    error_log('BillGuard: admin monitoring JSON feed unavailable.');
     http_response_code(503);
     echo json_encode(['ok' => false]);
 }
