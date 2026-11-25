@@ -1,9 +1,9 @@
 # BillGuard — Protection #9 Activity Logging (Security 1 / Section 13.4)
 
-**Status:** Existing-route activity logging and initial admin page/feed
-authorization logging are implemented. GitHub CI and local Chrome checks must
-be verified before final sign-off. This is not yet the complete Phase 6
-security monitoring dashboard.
+**Status:** All required activity logging and admin access audit event code
+is implemented and CI-tested. Phase 6 monitoring dashboard, threat flags
+and CLI scanner are also implemented. **Local browser and Windows scheduled
+monitor testing remain pending** before final owner sign-off.
 
 ## Purpose and audit schema
 
@@ -67,8 +67,8 @@ generates `ADMIN_VIEWED_DASHBOARD` for authenticated admins and
 shows event type, supplied username, IP and PHT time, with HTML escaping;
 the feed returns these fields in JSON without audit metadata. Both use the
 existing activity log and never expose passwords, cookies, OTPs or account
-number ciphertext. **The full Phase 6 cards, graphs, filtering, flags, and
-CLI monitor are separate future tasks.**
+number ciphertext. **The full Phase 6 dashboard and CLI monitoring script
+are now implemented and documented** in [Phase 6 guide](PHASE6_SECURITY_MONITORING.md).
 
 ## Windows testing
 
@@ -253,6 +253,6 @@ admin test account, leave this step as pending instead of bypassing security.
 
 Protection #9 logging and admin access events are **implemented**.
 Protection #9 remains pending **owner local browser verification** of normal
-logging and both admin/denied paths. The complete Phase 6 monitoring dashboard
-and scheduled monitoring script remain separate projects. The 15-minute
-session timeout is unchanged.
+logging and both admin/denied paths. The Phase 6 dashboard and scanner
+have been implemented; verify them using the [Phase 6 guide](PHASE6_SECURITY_MONITORING.md).
+The 15-minute session timeout is unchanged.
