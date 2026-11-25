@@ -74,6 +74,7 @@ foreach ([
     ['event' => 'LOGIN_FAILED;DROP'],
     ['username' => str_repeat('u', 81)],
     ['ip' => "bad\naddress"],
+    ['event' => ['LOGIN_FAILED']],
 ] as $bad) {
     $threw = false;
     try { bg_monitor_filters($bad); } catch (InvalidArgumentException $e) { $threw = true; }
