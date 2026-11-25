@@ -70,6 +70,11 @@ try {
     $update->execute([':hash' => $newHash, ':id' => $id]);
     verify_session(bg_auth_user($db, $seed, false) === null,
         'Passive status rejects session revoked by password reset');
+    $auditCount = $db->prepare('SELECT COUNT(*) FROM activity_log
+        WHERE user_id = :uid AND event_type = :event');
+    $auditCount->execute([':uid' => $id, ':event' => 'SESSION_REVOKED']);
+    verify_session((int) $auditCount->fetchColumn() === 1,
+        'Password reset session revocation is recorded without credentials');
 
     // Restore a logged-in state to check hard inactivity expiry.
     bg_secure_start();
@@ -81,6 +86,9 @@ try {
     ];
     verify_session(bg_auth_user($db, $seed, true) === null,
         'A Stay Signed In attempt after expiry must NOT restore authentication');
+    $auditCount->execute([':uid' => $id, ':event' => 'SESSION_EXPIRED']);
+    verify_session((int) $auditCount->fetchColumn() === 1,
+        'Hard idle expiry inserts exactly one SESSION_EXPIRED event');
     verify_session(empty($_SESSION['user_id']),
         'Expired session destroys authenticated identity');
 
