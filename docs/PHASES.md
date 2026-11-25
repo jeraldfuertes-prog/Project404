@@ -99,7 +99,7 @@ This roadmap follows the IT 107 **Security1 Student Handout**. **Scope change (N
 6. [ ] Secure sessions, ID regeneration, seeded idle timeout, logout destruction.
 7. [ ] Last three password hashes checked before accepting a change.
 8. [ ] Hidden honeypot on registration; silently reject if filled.
-9. [ ] Complete activity logging (Section 13.4).
+9. [ ] Complete activity logging (Section 13.4). **IN PROGRESS — existing login, OTP, CAPTCHA, recovery, billing, profile and encrypted-number events are logged; canonical RESET_REQUESTED/PASSWORD_CHANGED, explicit LOGOUT, SESSION_EXPIRED/SESSION_REVOKED, honeypot and protected-form CSRF events are implemented. Audit-metadata safety rules and GitHub tests added. Local browser tests and Phase 6 ADMIN_VIEWED_DASHBOARD / ADMIN_ACCESS_DENIED logging remain pending.** See [Protection 9 testing](PROTECTION9_ACTIVITY_LOGGING.md).
 10. [ ] Generic user-facing errors; private server error log outside web root.
 11. [ ] Keep DB/SMTP/CAPTCHA/encryption secrets outside web root and Git history.
 12. [ ] Apply `X-Frame-Options: DENY` and `X-Content-Type-Options: nosniff` on every page.
