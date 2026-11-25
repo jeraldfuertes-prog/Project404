@@ -12,6 +12,12 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
     exit;
 }
 if (!bg_check_csrf($_POST['csrf_token'] ?? null)) {
+    try {
+        $db = billguard_db();
+        bg_log($db, 'CSRF_REJECTED', null, null, ['page' => 'session-renew']);
+    } catch (Throwable $e) {
+        error_log('BillGuard: session renewal CSRF audit unavailable.');
+    }
     http_response_code(403);
     echo json_encode(['ok' => false]);
     exit;
