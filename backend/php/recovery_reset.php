@@ -211,6 +211,10 @@ function bg_reset_password(
         $cancel->execute([':now' => $now, ':uid' => $id]);
         bg_log($db, 'PASSWORD_RESET', null, $id,
             ['method' => 'verified_email_code_and_security_answer']);
+        // Section 13.4 canonical success event; emit only after the password
+        // update and proof checks succeed, within the same transaction.
+        bg_log($db, 'PASSWORD_CHANGED', null, $id,
+            ['method' => 'verified_email_code_and_security_answer']);
         $db->commit();
         bg_reset_success_email((string) $user['email'], $config);
         return ['ok' => true, 'message' => 'Password changed. Sign in with your new password.'];
