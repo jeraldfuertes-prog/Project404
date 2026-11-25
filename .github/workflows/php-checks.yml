@@ -48,6 +48,8 @@ jobs:
         run: php backend/tests/utility_account_rules_test.php
       - name: Validate Protection 9 activity logging metadata rejects secrets
         run: php backend/tests/activity_log_rules_test.php
+      - name: Validate Phase 6 security detection and safe dashboard filters
+        run: php backend/tests/monitor_rules_test.php
 
 
   billing-integration:
@@ -90,6 +92,11 @@ jobs:
           BG_TEST_DB_PASS: billing_ci_test_only
           BG_ADMIN_AUDIT_CI: yes
         run: php backend/tests/admin_activity_integration_test.php
+      - name: Validate Phase 6 monitoring dashboard and deduplicated threat flags
+        env:
+          BG_TEST_DB_PASS: billing_ci_test_only
+          BG_MONITOR_CI: yes
+        run: php backend/tests/monitor_integration_test.php
       - name: Validate Phase 3 login OTP lockouts alerts and IP blocking in MySQL
         env:
           BG_TEST_DB_PASS: billing_ci_test_only
