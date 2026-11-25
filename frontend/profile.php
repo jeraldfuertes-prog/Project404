@@ -32,6 +32,12 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
     $action = is_string($_POST['action'] ?? null) ? $_POST['action'] : '';
     if (!bg_check_csrf($_POST['csrf_token'] ?? null)) {
         http_response_code(403);
+        try {
+            bg_log($db, 'CSRF_REJECTED', null, (string) $user['id_number'],
+                ['page' => 'profile']);
+        } catch (Throwable $e) {
+            error_log('BillGuard: profile CSRF activity audit failed.');
+        }
         $message = 'Your request token expired. Please refresh and try again.';
     } elseif ($action === 'utility_save') {
         if (!$utilitySchemaReady || !$utilityKeyReady) {
