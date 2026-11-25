@@ -1,9 +1,9 @@
 # BillGuard — Protection #9 Activity Logging (Security 1 / Section 13.4)
 
-**Status:** Implemented and CI-tested for existing public and authenticated
-routes; **local Chrome evidence and Phase 6 admin access events are still
-pending**. This is NOT a claim that the complete Section 13.4 / monitoring
-dashboard is finished.
+**Status:** Existing-route activity logging and initial admin page/feed
+authorization logging are implemented. GitHub CI and local Chrome checks must
+be verified before final sign-off. This is not yet the complete Phase 6
+security monitoring dashboard.
 
 ## Purpose and audit schema
 
@@ -58,12 +58,17 @@ PASSWORD_CHANGED is recorded **only** in the successful password-reset DB
 transaction; failed resets do not emit it. The older recovery event labels
 are retained for existing rate-limit queries and historical audit consumers.
 
-**Pending Phase 6:** The handout's ADMIN_VIEWED_DASHBOARD and
-ADMIN_ACCESS_DENIED events require real authorization checks on the
-admin-only monitoring dashboard and its JSON endpoint. Since Phase 6 has
-not built these endpoints yet, these admin event requirements are **not
-implemented**. They must be added and tested before Protection #9 is
-marked fully complete.
+**Admin activity audit is now implemented:** A minimal read-only
+`admin-security.php` page and `admin-security-data.php` JSON feed have
+independent authorization checks through the existing authenticated session,
+password fingerprint, server-side expiry, and database role. Access to both
+generates `ADMIN_VIEWED_DASHBOARD` for authenticated admins and
+`ADMIN_ACCESS_DENIED` for anonymous or non-admin requests. The page only
+shows event type, supplied username, IP and PHT time, with HTML escaping;
+the feed returns these fields in JSON without audit metadata. Both use the
+existing activity log and never expose passwords, cookies, OTPs or account
+number ciphertext. **The full Phase 6 cards, graphs, filtering, flags, and
+CLI monitor are separate future tasks.**
 
 ## Windows testing
 
@@ -179,6 +184,60 @@ Expected: descriptive safe keys like `page`, `method`, `reason`,
 security answer, key, cookie, ciphertext or full utility account number
 field names. GitHub CI also tests rejected sensitive metadata directly.
 
+### Step 7 — Verify admin-only access and admin audit events
+
+Admin roles **must never be offered in open registration**. For a local
+instructor demonstration, use a **separate, existing verified test account**
+and grant its role **only in phpMyAdmin**, after confirming which test
+username you intend to use. This is an explicit administrator operation,
+not a public registration option:
+
+~~~sql
+UPDATE users
+SET role = 'admin'
+WHERE username = 'YOUR_SEPARATE_VERIFIED_TEST_USERNAME'
+  AND account_status = 'active'
+  AND email_verified_at IS NOT NULL;
+~~~
+
+Confirm one row was affected and the selected account belongs to you.
+**Never use this query with an unknown or production account.** For the
+handout's final admin-account deliverable, maintain a dedicated account
+provisioned administratively (not through a public admin signup).
+
+1. Sign in as an **ordinary** household user with OTP and open
+   http://localhost:8000/admin-security.php; expect **403 Access denied**.
+2. While still signed in, open
+   http://localhost:8000/admin-security-data.php; expect **403** and
+   JSON `{"ok":false}`, not any log records.
+3. Sign out; repeat both addresses without an authenticated session.
+   Both must deny access.
+4. Sign in as the separate admin test account with OTP. The sidebar now
+   offers **Security Activity**. The page should list at most 50 recent
+   events, read-only, including timestamps in Philippine time.
+5. Open the admin JSON endpoint while signed in as admin. It should
+   return `{"ok":true,"events":[...]}` with event metadata but no secrets.
+6. In phpMyAdmin select `billguard_dev` and execute:
+
+~~~sql
+SELECT event_type, created_at,
+       JSON_UNQUOTE(JSON_EXTRACT(details, '$.resource')) AS resource
+FROM activity_log
+WHERE event_type IN ('ADMIN_VIEWED_DASHBOARD', 'ADMIN_ACCESS_DENIED')
+ORDER BY id DESC
+LIMIT 30;
+~~~
+
+Expect `ADMIN_ACCESS_DENIED` for unauthorized page/feed requests and
+`ADMIN_VIEWED_DASHBOARD` for successful admin page/feed visits.
+Each should include `resource = page` or `resource = feed` and should
+not contain passwords or cookies. Do not share complete IPs/usernames
+in screenshots.
+
+**Never manually INSERT audit events to make the screenshots appear**.
+Generate them through real browser requests. If you do not have a verified
+admin test account, leave this step as pending instead of bypassing security.
+
 ## Evidence to submit
 
 1. Screenshot: CLI showing activity log schema READY and event counts.
@@ -187,11 +246,13 @@ field names. GitHub CI also tests rejected sensitive metadata directly.
 3. Screenshot: phpMyAdmin showing RESET_REQUESTED + PASSWORD_CHANGED
    (after a successful reset test).
 4. Screenshot: denied CSRF, failed login, or SESSION_EXPIRED logs.
-5. Later Phase 6: admin dashboard access and rejection events.
+5. Admin test: 403 for ordinary users and anonymous visitors, admin-only
+   Security Activity page, and both admin-view and access-denied log events.
 
 ## Next work
 
-Protection #9 remains **IN PROGRESS** until local activity logging tests
-pass and Phase 6 implements and verifies ADMIN_VIEWED_DASHBOARD and
-ADMIN_ACCESS_DENIED for both admin pages and their JSON data endpoint.
-The user-requested 15-minute session setting is not changed by this work.
+Protection #9 logging and admin access events are **implemented**.
+Protection #9 remains pending **owner local browser verification** of normal
+logging and both admin/denied paths. The complete Phase 6 monitoring dashboard
+and scheduled monitoring script remain separate projects. The 15-minute
+session timeout is unchanged.
