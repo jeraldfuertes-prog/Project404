@@ -82,12 +82,18 @@ try {
     $_SESSION = [
         'user_id' => $adminId,
         'auth_password_fingerprint' => bg_auth_password_fingerprint($adminHash),
-        'last_activity' => time(),
+        'last_activity' => time() - 100,
     ];
+    $priorActivity = (int) $_SESSION['last_activity'];
     $admin = bg_admin_audit_authorize($db, $seed, 'page');
     audit_verify($admin !== null && $admin['role'] === 'admin',
         'Verified admin role authorized on activity page');
+    audit_verify((int) $_SESSION['last_activity'] > $priorActivity,
+        'Deliberate admin page visit renews authenticated session');
+    $timeAfterPage = (int) $_SESSION['last_activity'];
     $feedAdmin = bg_admin_audit_authorize($db, $seed, 'feed');
+    audit_verify((int) $_SESSION['last_activity'] === $timeAfterPage,
+        'Passive JSON feed cannot silently extend session lifetime');
     audit_verify($feedAdmin !== null && $feedAdmin['id_number'] === $adminId,
         'Verified admin role authorized on JSON activity feed');
 
