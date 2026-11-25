@@ -64,6 +64,8 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                     bg_log($db, 'UTILITY_ACCOUNT_REVEALED', null, (string) $user['id_number']);
                 }
             } catch (Throwable $e) {
+                // Any audit or decryption failure must not render plaintext.
+                $utilityReveal = null;
                 error_log('BillGuard: secure utility account reveal failed.');
                 $message = 'Could not reveal the encrypted utility account number.';
             }
@@ -124,7 +126,7 @@ bg_app_start('My Profile', 'profile', $user);
 ?>
 <header class="app-page__header">
     <div><p class="eyebrow">Account preferences</p><h1>MY PROFILE.</h1>
-        <p>Manage your name and household address without changing your secure login.</p></div>
+        <p>Manage your household details and encrypted utility account number securely.</p></div>
 </header>
 <?php if ($notice): ?><div class="notice notice--cyan" role="status"><?= bg_safe($notice) ?></div><?php endif; ?>
 <?php if ($message): ?><div class="notice notice--error" role="alert"><?= bg_safe($message) ?></div><?php endif; ?>
