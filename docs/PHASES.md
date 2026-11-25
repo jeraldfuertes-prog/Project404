@@ -107,25 +107,38 @@ This roadmap follows the IT 107 **Security1 Student Handout**. **Scope change (N
 
 **Deliverable:** Manual tests showing each mandatory protection works.
 
-## Phase 6 — Admin security monitoring (Week 4)
+## Phase 6 — Admin security monitoring (Week 4) — CODE IMPLEMENTED
 
-**Goal:** Complete Checkpoint 4.
+**Goal:** Complete Checkpoint 4. **Development implemented and CI-tested; local
+browser, administrator account and Windows scheduled-task confirmation pending.**
+See [Phase 6 Windows test plan](PHASE6_SECURITY_MONITORING.md).
 
-- [ ] Add an admin account directly to the database, never through open registration.
-- [x] **Initial admin-only Security Activity view and JSON endpoint**: both independently check role, expiry and session fingerprint, and log permitted `ADMIN_VIEWED_DASHBOARD` / denied `ADMIN_ACCESS_DENIED` visits. Implemented for Protection #9; local Chrome verification pending. The full monitoring interface is still a separate Phase 6 task.
-- [ ] Read-only dashboard: summary cards, failed-login hourly bar chart, top 5 IPs, script flags, latest 50 events with date/event/username/IP filters.
-- [ ] Auto-refresh dashboard JSON every 60 seconds; protect from HTML/JS injection.
-- [ ] Keep activity log append-only: never provide log edit/delete operations.
-- [ ] Build `backend/scripts/monitor.php`, runnable only by CLI and inaccessible from the browser.
-- [ ] Scan latest 24 hours, flag:
-  - IP above seeded 10-minute failure threshold.
-  - One username attacked from >=3 IPs.
-  - >=5 OTP failures for one user within 10 minutes.
-  - Successful login between 12:00 AM and 5:00 AM Philippine time.
-- [ ] Avoid duplicate same-day flags; print a console summary.
-- [ ] Document how Windows Task Scheduler or cron could run it every 15 minutes.
+- [ ] Add and verify a separate admin account directly in local MySQL (NEVER
+  through public registration). Owner must do this locally with a verified test inbox.
+- [x] Protect the admin dashboard AND its JSON endpoint; both check database
+  role, active signed-in session, password version and 15-minute inactivity
+  limit, logging permitted ADMIN_VIEWED_DASHBOARD and denied ADMIN_ACCESS_DENIED.
+- [x] Read-only dashboard: last-24-hour summary cards, 24 PHT hourly
+  failed-login bars, top five source IPs, latest 20 security flags, latest 50
+  events with date/event/username/IP filters. HTML escapes all untrusted
+  fields and JavaScript renders text safely.
+- [x] Refresh dashboard JSON every 60 seconds; passive feed reads do NOT
+  extend the server's inactivity timeout.
+- [x] Keep activity_log append-only from application code; dashboard/feed
+  cannot edit or delete events.
+- [x] CLI-only backend/scripts/monitor.php, outside the public web root.
+- [x] Scan latest 24 hours, flag four handout patterns:
+  - IP exceeding seeded ten-minute failed-login threshold (8 + d2).
+  - Username targeted from at least three distinct IP addresses.
+  - At least five OTP failures against one user in ten minutes.
+  - Successful login between midnight and 05:00 PHT (00:00–04:59).
+- [x] Avoid duplicate same-day flags with the security_flags unique key and
+  INSERT IGNORE; print only aggregate counts.
+- [x] Document Task Scheduler every 15 minutes, manual CLI testing, SQL
+  evidence, and a secured admin demo flow.
+- [ ] Owner's local Chrome, phpMyAdmin, CLI and Task Scheduler checks.
 
-**Checkpoint 4:** Thirteen defenses, monitoring dashboard, and monitoring script.
+**Checkpoint 4:** Code/CI complete; final local sign-off depends on owner tests.
 
 ## Phase 7 — Bill tracking, validation, documentation, and final demo
 
