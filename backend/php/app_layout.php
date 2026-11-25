@@ -20,7 +20,7 @@ function bg_app_start(string $title, string $active, array $user): void
     // Display admin-only navigation only for a server-authenticated admin.
     // The page and JSON feed independently recheck permissions on every visit.
     if (($user['role'] ?? null) === 'admin') {
-        $menu[] = ['security', 'Security Activity', 'admin-security.php', '◆'];
+        $menu[] = ['security', 'Security Monitor', 'admin-security.php', '◆'];
     }
     ?>
     <div class="app-shell" id="app-shell">
