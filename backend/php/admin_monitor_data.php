@@ -5,6 +5,12 @@ require_once __DIR__ . '/admin_audit.php';
 /** Strictly bounded, read-only dashboard filters; no SQL fragments from HTTP. */
 function bg_monitor_filters(array $input): array
 {
+    // Reject nested GET parameters rather than coercing arrays into strings.
+    foreach (['date', 'event', 'username', 'ip'] as $field) {
+        if (isset($input[$field]) && !is_string($input[$field])) {
+            throw new InvalidArgumentException('Invalid activity filter.');
+        }
+    }
     $date = trim((string) ($input['date'] ?? ''));
     $event = strtoupper(trim((string) ($input['event'] ?? '')));
     $username = trim((string) ($input['username'] ?? ''));
