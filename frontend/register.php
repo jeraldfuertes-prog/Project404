@@ -40,7 +40,12 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
         catch (Throwable $e) { error_log('BillGuard registration CSRF logging failed.'); }
         $errors['form'] = 'Your form session expired. Refresh the page and try again.';
     } elseif (bg_form_input($_POST, 'company_site') !== '') {
-        // Honeypot: automatic submissions are refused.
+        // No honeypot content, email, or other form fields belong in logs.
+        try {
+            bg_log($db, 'HONEYPOT_TRIGGERED', null, null, ['page' => 'register']);
+        } catch (Throwable $e) {
+            error_log('BillGuard: honeypot activity audit failed.');
+        }
         $errors['form'] = 'Registration could not be completed.';
     } else {
         try {
