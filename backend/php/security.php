@@ -127,8 +127,36 @@ function bg_safe(mixed $value): string
     return htmlspecialchars((string) $value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 }
 
+/**
+ * Audit metadata must describe an event, not carry credential or account data.
+ * Never pass passwords, OTPs, reset tokens, security answers, cookie values,
+ * plaintext utility numbers or encryption material to the activity log.
+ */
+function bg_activity_details_safe(array $details): bool
+{
+    foreach ($details as $name => $value) {
+        if (!is_string($name)
+            || preg_match('/(?:password|otp|code|token|secret|answer|key|cookie|cipher|utility_account|authorization)/i', $name)) {
+            return false;
+        }
+        if ($value !== null && !is_string($value) && !is_int($value)
+            && !is_float($value) && !is_bool($value)) {
+            return false;
+        }
+        if (is_string($value)
+            && (strlen($value) > 128 || preg_match('/[\\x00-\\x1F\\x7F]/', $value))) {
+            return false;
+        }
+    }
+    return true;
+}
+
 function bg_log(PDO $db, string $event, ?string $username = null, ?string $userId = null, array $details = []): void
 {
+    if (!preg_match('/^[A-Z][A-Z0-9_]{1,63}$/D', $event)
+        || !bg_activity_details_safe($details)) {
+        throw new InvalidArgumentException('Unsafe activity event or metadata.');
+    }
     $sql = 'INSERT INTO activity_log (event_type, username_typed, user_id, ip_address, user_agent, details)
             VALUES (:event, :username, :userid, :ip, :agent, :details)';
     $query = $db->prepare($sql);
