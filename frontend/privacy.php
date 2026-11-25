@@ -37,9 +37,11 @@ bg_page_start('Privacy Notice', 'privacy');
                 email address, chosen username, security question answers and your consent timestamp.
                 The database also generates an internal account identifier and records relevant security events,
                 such as attempted logins and verification emails.</p>
-            <p>When future utility-bill features are enabled, additional billing and payment records may be collected
-                with an updated notice where required. The simplified sign-up does not currently ask for a birthdate,
-                student ID number, utility account number, or monthly utility budget.</p>
+            <p>In My Profile, you may optionally save a Utility Account Number (8–12 digits) to identify
+                the provider account you manage. BillGuard encrypts it at rest and allows only your
+                authenticated account to reveal or remove it. Bill and payment records are also stored
+                when you use the dashboard. The simplified sign-up does not collect birthdate,
+                manually entered ID Number, or monthly utility budget.</p>
             <p>Passwords, OTPs and recovery answers are used for account protection and stored only as hashes.</p>
         </article>
         <article class="card card--dark">
@@ -51,9 +53,11 @@ bg_page_start('Privacy Notice', 'privacy');
         <article class="card card--dark">
             <h3>03 / Information protection</h3>
             <p>BillGuard uses server-side validation, password and recovery-answer hashing, email verification,
-                CAPTCHA on login, secure sessions, and owner-scoped dashboard access. The future utility account
-                number feature is planned to use AES-256-GCM encryption when it is introduced.
-                Security monitoring and admin functions remain separate from ordinary household records.</p>
+                CAPTCHA on login, secure sessions, and owner-scoped dashboard access. Utility Account Numbers
+                are encrypted using AES-256-GCM with a random IV and authentication tag; the encryption
+                key is stored privately outside the web root, never in GitHub. Only the authenticated
+                owner may request decryption. Security monitoring and admin functions remain separate
+                from ordinary household records.</p>
         </article>
         <article class="card card--dark">
             <h3>04 / Retention of your information</h3>

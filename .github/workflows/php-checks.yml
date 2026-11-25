@@ -44,6 +44,8 @@ jobs:
         run: php backend/tests/recovery_reset_rules_test.php
       - name: Validate Phase 4.5 seeded idle session and CSRF rules
         run: php backend/tests/session_safety_rules_test.php
+      - name: Validate Protection 13 AES-256-GCM rules and random IVs
+        run: php backend/tests/utility_account_rules_test.php
 
 
   billing-integration:
@@ -76,6 +78,11 @@ jobs:
           BG_TEST_DB_HOST: 127.0.0.1
           BG_TEST_DB_PASS: billing_ci_test_only
         run: php backend/tests/billing_integration_test.php
+      - name: Validate Protection 13 ciphertext in MySQL and account ownership
+        env:
+          BG_TEST_DB_PASS: billing_ci_test_only
+          BG_UTILITY_ENCRYPTION_CI: yes
+        run: php backend/tests/utility_account_integration_test.php
       - name: Validate Phase 3 login OTP lockouts alerts and IP blocking in MySQL
         env:
           BG_TEST_DB_PASS: billing_ci_test_only

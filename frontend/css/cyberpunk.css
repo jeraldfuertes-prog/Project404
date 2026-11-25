@@ -703,3 +703,39 @@ strong { color: var(--cp-text); }
 @media (max-width: 420px) {
   .session-warning-card__actions { flex-direction: column; }
 }
+
+
+/* Protection #13: owner-only AES-256-GCM utility account controls. */
+.app-utility-security { margin-top: 24px; }
+.app-utility-security__status {
+  display: inline-block;
+  padding: 8px 12px;
+  margin-bottom: 20px;
+  border: 1px solid var(--cp-border-muted);
+  border-radius: 6px;
+  color: var(--cp-text);
+  letter-spacing: .025em;
+}
+.app-utility-security__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin: 18px 0;
+}
+.app-utility-security__actions form { margin: 0; }
+.app-utility-security__reveal { margin-top: 16px; }
+.app-utility-security__reveal code {
+  display: block;
+  margin: 10px 0;
+  padding: 12px;
+  overflow-wrap: anywhere;
+  font-size: 1.16rem;
+  letter-spacing: .1em;
+  color: var(--cp-cyan);
+}
+@media (max-width: 540px) {
+  .app-utility-security__actions { flex-direction: column; align-items: stretch; }
+  .app-utility-security__actions form,
+  .app-utility-security__actions .button { width: 100%; }
+}
