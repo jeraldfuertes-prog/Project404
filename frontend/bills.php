@@ -21,6 +21,12 @@ $values = [];
 if ($ready && ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
     if (!bg_check_csrf($_POST['csrf_token'] ?? null)) {
         http_response_code(403);
+        try {
+            bg_log($db, 'CSRF_REJECTED', null, (string) $user['id_number'],
+                ['page' => 'bills']);
+        } catch (Throwable $e) {
+            error_log('BillGuard: bills CSRF activity audit failed.');
+        }
         $message = 'Your session token expired. Refresh the form and try again.';
     } else {
         $action = bg_form_input($_POST, 'action');
