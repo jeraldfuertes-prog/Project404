@@ -25,7 +25,7 @@ function bg_idle_timeout_seconds(array $seed): int
  */
 function bg_session_warning_lead_for_idle_seconds(int $idle): int
 {
-    return min(30, max(0, $idle - 15));
+    return min(60, max(0, $idle - 15));
 }
 
 function bg_session_warning_lead_seconds(array $seed): int
