@@ -71,13 +71,16 @@ The output is secret. Set this array entry in backend/config.php (not Git):
 Paste the complete generated string including its **base64:** prefix.
 Never paste a key into chat, Git, screenshots or public logs.
 
-### 3. Test cryptography rules
+### 3. Test key setup, database columns and cryptography rules
 
 ~~~powershell
+& "D:\php83\php.exe" backend\scripts\check_utility_encryption.php
 & "D:\php83\php.exe" backend\tests\utility_account_rules_test.php
 ~~~
 
-Expect **0 failed**. Do not run the synthetic MySQL integration test locally:
+Expected: **Private AES-256 key: OK**, **MySQL connection: OK**,
+**Encrypted users columns: OK**, **Protection 13 local setup: READY**,
+and **0 failed** in the encryption rules. Do not run the synthetic MySQL integration test locally:
 it is reserved for GitHub Actions' disposable database.
 
 Start the PHP server if needed:
