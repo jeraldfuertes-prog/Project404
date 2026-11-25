@@ -171,6 +171,17 @@ try {
     $secondQ->execute([':event' => 'PASSWORD_RESET', ':uid' => $uid]);
     assert_reset((int) $secondQ->fetchColumn() === 1,
         'Exactly one successful reset is recorded');
+    $secondQ->execute([':event' => 'PASSWORD_CHANGED', ':uid' => $uid]);
+    assert_reset((int) $secondQ->fetchColumn() === 1,
+        'Exactly one canonical PASSWORD_CHANGED event follows a valid reset');
+    $detailsQ = $db->prepare("SELECT details FROM activity_log
+        WHERE event_type = 'PASSWORD_CHANGED' AND user_id = :uid");
+    $detailsQ->execute([':uid' => $uid]);
+    $auditDetails = (string) $detailsQ->fetchColumn();
+    assert_reset(!str_contains($auditDetails, $new)
+        && !str_contains($auditDetails, $previous4)
+        && !str_contains($auditDetails, '123456'),
+        'Password-change log details never contain passwords or OTPs');
     $db->exec("UPDATE users SET account_status='disabled' WHERE id_number='9191-4444'");
     assert_reset(!bg_reset_password($db, $flow, $seed, $smtp,
         $new, $new)['ok'], 'Disabled account cannot use old proof');
