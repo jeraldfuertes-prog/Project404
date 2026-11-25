@@ -14,7 +14,9 @@ function bg_admin_audit_authorize(PDO $db, array $seed, string $resource): ?arra
     if (!in_array($resource, ['page', 'feed'], true)) {
         throw new InvalidArgumentException('Unexpected admin audit resource.');
     }
-    $account = bg_auth_user($db, $seed, false);
+    // A deliberate admin page navigation is activity. Passive JSON reads
+    // must not silently extend the 15-minute idle session.
+    $account = bg_auth_user($db, $seed, $resource === 'page');
     if ($account === null || ($account['role'] ?? null) !== 'admin') {
         // bg_auth_user has already checked session expiry, active account
         // and password fingerprint before any role is trusted.
