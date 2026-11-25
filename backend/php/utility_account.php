@@ -34,9 +34,23 @@ function bg_utility_schema_ready(PDO $db): bool
     return count($q->fetchAll(PDO::FETCH_COLUMN)) === 3;
 }
 
+/**
+ * Second authorization boundary: even internal callers cannot select
+ * another account via a forged ID. The controller has already run
+ * bg_app_context() to verify an unexpired session and password fingerprint.
+ */
+function bg_utility_is_session_owner(string $ownerId): bool
+{
+    $sessionOwner = $_SESSION['user_id'] ?? null;
+    return session_status() === PHP_SESSION_ACTIVE
+        && is_string($sessionOwner)
+        && hash_equals($sessionOwner, $ownerId);
+}
+
 /** True for the current authenticated owner only; no ciphertext sent to client. */
 function bg_utility_account_present(PDO $db, string $ownerId): bool
 {
+    if (!bg_utility_is_session_owner($ownerId)) return false;
     $q = $db->prepare("SELECT utility_account_ciphertext IS NOT NULL
         FROM users WHERE id_number = :uid AND account_status = 'active' LIMIT 1");
     $q->execute([':uid' => $ownerId]);
@@ -52,6 +66,9 @@ function bg_utility_account_present(PDO $db, string $ownerId): bool
  */
 function bg_utility_account_save(PDO $db, string $ownerId, string $number, array $config): array
 {
+    if (!bg_utility_is_session_owner($ownerId)) {
+        return ['ok' => false, 'message' => 'Your account session is no longer valid.'];
+    }
     if (($error = bg_utility_account_error($number)) !== null) {
         return ['ok' => false, 'message' => $error];
     }
@@ -96,6 +113,9 @@ function bg_utility_account_save(PDO $db, string $ownerId, string $number, array
  */
 function bg_utility_account_reveal(PDO $db, string $ownerId, array $config): ?string
 {
+    if (!bg_utility_is_session_owner($ownerId)) {
+        throw new RuntimeException('Account ownership verification failed.');
+    }
     if (!bg_utility_key_ready($config)) {
         throw new RuntimeException('Encryption is not configured.');
     }
@@ -118,6 +138,7 @@ function bg_utility_account_reveal(PDO $db, string $ownerId, array $config): ?st
 /** Owner-controlled removal; the encryption key is not deleted. */
 function bg_utility_account_remove(PDO $db, string $ownerId): bool
 {
+    if (!bg_utility_is_session_owner($ownerId)) return false;
     try {
         $db->beginTransaction();
         $lock = $db->prepare("SELECT id_number FROM users
