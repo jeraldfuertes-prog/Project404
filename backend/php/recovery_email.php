@@ -84,6 +84,12 @@ function bg_recovery_email_entry(PDO $db, string $email, array $seed, array $con
             'phase' => 'email-first', 'rate_limited' => $throttled,
             'ip_blocked' => $blocked,
         ]);
+        // Section 13.4 canonical event. It must not reveal whether the
+        // supplied email belongs to an account or whether a code was sent.
+        bg_log($db, 'RESET_REQUESTED', null, null, [
+            'method' => 'email_first', 'rate_limited' => $throttled,
+            'ip_blocked' => $blocked,
+        ]);
         return [
             'ok' => true, 'message' => BG_RECOVERY_EMAIL_NOTICE,
             'candidate_id' => $candidate, 'code_sent' => $sent,

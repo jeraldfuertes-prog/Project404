@@ -53,6 +53,13 @@ function bg_auth_user(PDO $db, array $seed, bool $renewActivity = true): ?array
     }
     $last = (int) ($_SESSION['last_activity'] ?? 0);
     if (bg_session_remaining_seconds($last, $seed, time()) === 0) {
+        // Log the timeout before clearing the authenticated identity. Logging
+        // is best-effort here: expired sessions must always be rejected.
+        try {
+            bg_log($db, 'SESSION_EXPIRED', null, $id, ['reason' => 'idle_timeout']);
+        } catch (Throwable $e) {
+            error_log('BillGuard: expired session audit unavailable.');
+        }
         bg_sign_out();
         return null;
     }
@@ -63,6 +70,15 @@ function bg_auth_user(PDO $db, array $seed, bool $renewActivity = true): ?array
     $fingerprint = $_SESSION['auth_password_fingerprint'] ?? null;
     if (!$user || !is_string($fingerprint)
         || !hash_equals(bg_auth_password_fingerprint((string) $user['password_hash']), $fingerprint)) {
+        // A password reset invalidates old sessions. Never log credentials.
+        if ($user) {
+            try {
+                bg_log($db, 'SESSION_REVOKED', null, $id,
+                    ['reason' => 'password_version_mismatch']);
+            } catch (Throwable $e) {
+                error_log('BillGuard: revoked session audit unavailable.');
+            }
+        }
         bg_sign_out();
         return null;
     }

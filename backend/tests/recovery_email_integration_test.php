@@ -68,6 +68,18 @@ try {
         'Failed synthetic SMTP never pretends that code was sent');
     recovery_email_assert($known['message'] === $missing['message'],
         'Known and unknown email receive same visible response');
+    $audit = $db->prepare("SELECT user_id, username_typed, details FROM activity_log
+        WHERE event_type = 'RESET_REQUESTED' AND ip_address = :ip ORDER BY id");
+    $audit->execute([':ip' => $_SERVER['REMOTE_ADDR']]);
+    $resetEvents = $audit->fetchAll();
+    recovery_email_assert(count($resetEvents) === 2,
+        'Both known and unknown email recovery requests emit RESET_REQUESTED');
+    recovery_email_assert(count(array_filter($resetEvents, static function (array $row): bool {
+        $details = (string) $row['details'];
+        return $row['user_id'] === null && $row['username_typed'] === null
+            && !str_contains($details, 'recovery-email@example.test')
+            && !str_contains($details, 'nobody@example.test');
+    })) === 2, 'Recovery request logs never disclose user existence or typed email');
     $checkOtp = $db->prepare("SELECT COUNT(*) FROM one_time_passwords
         WHERE user_id = :id AND purpose = 'reset'");
     $checkOtp->execute([':id' => $id]);
