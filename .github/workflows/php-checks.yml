@@ -46,6 +46,8 @@ jobs:
         run: php backend/tests/session_safety_rules_test.php
       - name: Validate Protection 13 AES-256-GCM rules and random IVs
         run: php backend/tests/utility_account_rules_test.php
+      - name: Validate Protection 9 activity logging metadata rejects secrets
+        run: php backend/tests/activity_log_rules_test.php
 
 
   billing-integration:
