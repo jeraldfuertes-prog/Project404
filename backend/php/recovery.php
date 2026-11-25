@@ -90,6 +90,9 @@ function bg_recovery_entry(PDO $db, string $username, array $seed): array
         // No account ID/email/answer is included in a public response or log.
         bg_log($db, 'RECOVERY_ENTRY_REQUESTED', null, null,
             ['phase' => '4.1', 'rate_limited' => $throttled, 'ip_blocked' => $blocked]);
+        bg_log($db, 'RESET_REQUESTED', null, null,
+            ['method' => 'username_entry', 'rate_limited' => $throttled,
+             'ip_blocked' => $blocked]);
 
         return ['ok' => true, 'message' => BG_RECOVERY_ENTRY_NOTICE,
             'candidate_id' => $candidate];
